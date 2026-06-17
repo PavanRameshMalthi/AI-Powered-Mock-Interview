@@ -5,7 +5,7 @@ const getHistory = async (req, res) => {
     const interviews = await Interview.find({ user: req.user.id })
       .sort({ createdAt: -1 })
       .limit(25)
-      .select("role difficulty score feedback createdAt");
+      .select("role difficulty score feedback atsScore createdAt");
 
     res.json({
       success: true,

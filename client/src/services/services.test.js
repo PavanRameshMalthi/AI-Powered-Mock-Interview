@@ -49,6 +49,10 @@ test("resume and history services call expected endpoints", async () => {
   api.get.mockResolvedValue({ data: { interviews: [] } });
 
   await resumeService.uploadResume(formData);
+  await resumeService.scoreResume({
+    resumeText: "React resume",
+    role: "Frontend Developer",
+  });
   await historyService.getHistory();
 
   expect(api.post).toHaveBeenCalledWith(
@@ -56,6 +60,10 @@ test("resume and history services call expected endpoints", async () => {
     formData,
     expect.objectContaining({ headers: expect.any(Object) })
   );
+  expect(api.post).toHaveBeenCalledWith("/resume/ats-score", {
+    resumeText: "React resume",
+    role: "Frontend Developer",
+  });
   expect(api.get).toHaveBeenCalledWith("/history");
 });
 

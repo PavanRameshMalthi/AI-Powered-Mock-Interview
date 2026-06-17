@@ -7,6 +7,7 @@ import { showError } from "../../components/UI/Toast";
 
 jest.mock("../../services/resumeService", () => ({
   uploadResume: jest.fn(),
+  scoreResume: jest.fn(),
 }));
 
 jest.mock("../../components/UI/Toast", () => ({
@@ -22,7 +23,10 @@ beforeEach(() => {
 });
 
 test("uploads a valid PDF resume and stores extracted text", async () => {
-  resumeService.uploadResume.mockResolvedValue({ resumeText: "Resume text" });
+  resumeService.uploadResume.mockResolvedValue({
+    resumeText: "Resume text",
+    atsScore: { score: 74, level: "Strong" },
+  });
   const file = new File(["content"], "resume.pdf", {
     type: "application/pdf",
   });
@@ -40,6 +44,11 @@ test("uploads a valid PDF resume and stores extracted text", async () => {
     expect(resumeService.uploadResume).toHaveBeenCalled();
   });
   expect(localStorage.getItem("resumeText")).toBe("Resume text");
+  expect(JSON.parse(localStorage.getItem("atsScore"))).toEqual({
+    score: 74,
+    level: "Strong",
+  });
+  expect(screen.getByText(/74% ats readiness/i)).toBeInTheDocument();
 });
 
 test("rejects non-PDF files before upload", async () => {

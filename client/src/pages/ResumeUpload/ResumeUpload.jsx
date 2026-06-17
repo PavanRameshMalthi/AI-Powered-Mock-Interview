@@ -13,6 +13,10 @@ const ResumeUpload = () => {
   const [resumeText, setResumeText] = useState(
     localStorage.getItem("resumeText") || ""
   );
+  const [atsScore, setAtsScore] = useState(() => {
+    const stored = localStorage.getItem("atsScore");
+    return stored ? JSON.parse(stored) : null;
+  });
 
   const handleFileChange = (event) => {
     const selected = event.target.files?.[0] || null;
@@ -48,7 +52,9 @@ const ResumeUpload = () => {
 
       const response = await resumeService.uploadResume(formData);
       localStorage.setItem("resumeText", response.resumeText);
+      localStorage.setItem("atsScore", JSON.stringify(response.atsScore));
       setResumeText(response.resumeText);
+      setAtsScore(response.atsScore);
       dismissToast(toastId);
       showSuccess("Resume uploaded");
     } catch (error) {
@@ -89,6 +95,12 @@ const ResumeUpload = () => {
             <h2>Extracted preview</h2>
             <span>{resumeText.length} characters</span>
           </div>
+          {atsScore ? (
+            <div className="ats-summary">
+              <strong>{atsScore.score}% ATS readiness</strong>
+              <span>{atsScore.level}</span>
+            </div>
+          ) : null}
           <p className="resume-preview">{resumeText.slice(0, 900)}</p>
         </section>
       ) : (

@@ -1,4 +1,5 @@
 const model = require("../utils/gemini");
+const { scoreResumeForRole } = require("../utils/atsScorer");
 
 const createFallbackQuestions = ({
   role,
@@ -121,6 +122,9 @@ Return only a JSON array of strings. Include technical, behavioral, project, and
     res.json({
       success: true,
       questions,
+      atsScore: resumeText
+        ? scoreResumeForRole({ resumeText, role })
+        : null,
     });
   } catch (error) {
     res.status(500).json({

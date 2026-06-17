@@ -1,19 +1,30 @@
 const model = require("../utils/gemini");
 const Interview = require("../models/Interview");
-
-const fallbackEvaluation = {
-  technical: 70,
-  communication: 70,
-  problemSolving: 70,
-  overall: 70,
-  feedback:
-    "The evaluation service could not produce a detailed result. Review your answers for clarity, structure, and job-specific examples.",
-};
+const { scoreResumeForRole } = require("../utils/atsScorer");
 
 const clampScore = (value) => {
   const score = Number(value);
   if (!Number.isFinite(score)) return 0;
   return Math.min(Math.max(Math.round(score), 0), 100);
+};
+
+const buildFallbackEvaluation = ({ answers }) => {
+  const joinedAnswers = answers.join(" ");
+  const wordCount = joinedAnswers.split(/\s+/).filter(Boolean).length;
+  const exampleSignals = (joinedAnswers.match(
+    /\b(example|because|result|impact|tradeoff|built|improved|measured|tested)\b/gi
+  ) || []).length;
+  const answeredRatio = answers.filter((answer) => answer.trim().length >= 12).length / answers.length;
+  const base = clampScore(45 + answeredRatio * 25 + Math.min(wordCount / 8, 20) + Math.min(exampleSignals * 3, 10));
+
+  return {
+    technical: base,
+    communication: clampScore(base + (wordCount > 80 ? 5 : -4)),
+    problemSolving: clampScore(base + (exampleSignals > 2 ? 6 : -3)),
+    overall: base,
+    feedback:
+      "Evaluation used the local scoring fallback. Strengthen answers with role-specific examples, measurable outcomes, and clear tradeoffs.",
+  };
 };
 
 const parseEvaluation = (responseText) => {
@@ -41,6 +52,7 @@ const evaluateInterview = async (req, res) => {
     const answers = Array.isArray(req.body.answers)
       ? req.body.answers.map(String)
       : [];
+    const resumeText = String(req.body.resumeText || "").trim();
 
     if (!role || !questions.length || !answers.length) {
       return res.status(400).json({
@@ -66,13 +78,21 @@ Return only JSON in this shape:
 }
 `;
 
-    let evaluation = fallbackEvaluation;
+    let evaluation = buildFallbackEvaluation({ answers });
 
     try {
       const result = await model.generateContent(prompt);
       evaluation = parseEvaluation(result.response.text());
     } catch {
-      evaluation = fallbackEvaluation;
+      evaluation = buildFallbackEvaluation({ answers });
+    }
+
+    const atsScore = resumeText
+      ? scoreResumeForRole({ resumeText, role })
+      : null;
+
+    if (atsScore) {
+      evaluation.overall = clampScore(evaluation.overall * 0.85 + atsScore.score * 0.15);
     }
 
     await Interview.create({
@@ -82,11 +102,14 @@ Return only JSON in this shape:
       answers,
       score: evaluation.overall,
       feedback: evaluation,
+      atsScore,
+      resumeText,
     });
 
     res.json({
       success: true,
       ...evaluation,
+      atsScore,
     });
   } catch {
     res.status(500).json({

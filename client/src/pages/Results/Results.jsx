@@ -14,6 +14,7 @@ const Results = () => {
       const config = JSON.parse(
         localStorage.getItem("interviewConfig") || "{}"
       );
+      const resumeText = localStorage.getItem("resumeText") || "";
 
       if (!questions.length || !answers.length || !config.role) {
         setError("Complete an interview before viewing results.");
@@ -24,9 +25,13 @@ const Results = () => {
         role: config.role,
         questions,
         answers,
+        resumeText,
       });
 
       setResult(response.data);
+      if (response.data.atsScore) {
+        localStorage.setItem("atsScore", JSON.stringify(response.data.atsScore));
+      }
     } catch (err) {
       setError(err.response?.data?.message || "Unable to evaluate interview");
     } finally {
@@ -55,8 +60,11 @@ const Results = () => {
     doc.text(`Technical: ${result.technical}`, 20, 55);
     doc.text(`Communication: ${result.communication}`, 20, 70);
     doc.text(`Problem Solving: ${result.problemSolving}`, 20, 85);
-    doc.text("Feedback:", 20, 105);
-    doc.text(result.feedback || "No feedback provided.", 20, 120, {
+    if (result.atsScore) {
+      doc.text(`ATS Fit: ${result.atsScore.score} (${result.atsScore.level})`, 20, 100);
+    }
+    doc.text("Feedback:", 20, result.atsScore ? 120 : 105);
+    doc.text(result.feedback || "No feedback provided.", 20, result.atsScore ? 135 : 120, {
       maxWidth: 160,
     });
     doc.save("Interview_Report.pdf");
@@ -93,6 +101,7 @@ const Results = () => {
     ["Communication", result.communication],
     ["Problem solving", result.problemSolving],
   ];
+  const atsScore = result.atsScore;
 
   return (
     <main className="app-shell">
@@ -139,6 +148,40 @@ const Results = () => {
           </Link>
         </div>
       </section>
+
+      {atsScore ? (
+        <section className="panel ats-panel">
+          <div className="section-heading">
+            <div>
+              <h2>ATS resume fit</h2>
+              <p className="muted">How closely your resume matches this target role.</p>
+            </div>
+            <strong>{atsScore.score}%</strong>
+          </div>
+          <div className="score-row ats-row">
+            <span>{atsScore.level}</span>
+            <div className="meter">
+              <span style={{ width: `${atsScore.score}%` }} />
+            </div>
+            <strong>{atsScore.score}</strong>
+          </div>
+          <div className="keyword-grid">
+            <div>
+              <h3>Matched keywords</h3>
+              <p>{atsScore.matchedKeywords?.join(", ") || "No strong matches yet."}</p>
+            </div>
+            <div>
+              <h3>Missing keywords</h3>
+              <p>{atsScore.missingKeywords?.join(", ") || "No critical gaps detected."}</p>
+            </div>
+          </div>
+          <ul className="recommendation-list">
+            {(atsScore.recommendations || []).map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </main>
   );
 };

@@ -7,9 +7,10 @@ AI Mock Interview is a full-stack MERN-style web application for practicing role
 - JWT-based registration and login
 - Protected dashboard and interview workflows
 - PDF resume upload with server-side file validation
+- ATS resume fit scoring with keyword, section, impact, and role-alignment checks
 - AI question generation with a local fallback when the AI provider is unavailable
 - Guided interview session with answer persistence
-- AI evaluation with saved interview history
+- AI evaluation with deterministic local fallback scoring and saved interview history
 - PDF scorecard export
 - Default dark mode UI
 - Responsive layouts for mobile, tablet, and desktop
@@ -164,7 +165,7 @@ npm test
 Current verified coverage:
 
 - Frontend statements: 82%+
-- Backend statements: 81%+
+- Backend statements: 84%+
 
 Run lint:
 
@@ -210,6 +211,34 @@ http://localhost:5000/api
 - Multipart form field: `resume`
 - PDF only
 - Max size: 5 MB
+- Returns extracted text and a general ATS readiness score
+
+`POST /resume/ats-score`
+
+- Protected route
+- Scores extracted resume text against a target role
+
+```json
+{
+  "role": "Frontend Developer",
+  "resumeText": "Skills React JavaScript CSS projects..."
+}
+```
+
+Example response:
+
+```json
+{
+  "success": true,
+  "atsScore": {
+    "score": 84,
+    "level": "Strong",
+    "matchedKeywords": ["react", "javascript"],
+    "missingKeywords": ["accessibility"],
+    "recommendations": ["Add relevant role keywords: accessibility."]
+  }
+}
+```
 
 ### Interview
 
@@ -227,6 +256,8 @@ http://localhost:5000/api
 }
 ```
 
+When `resumeText` is provided, the response also includes `atsScore`.
+
 ### Evaluation
 
 `POST /evaluation/evaluate`
@@ -237,9 +268,12 @@ http://localhost:5000/api
 {
   "role": "Frontend Developer",
   "questions": ["Question 1"],
-  "answers": ["Answer 1"]
+  "answers": ["Answer 1"],
+  "resumeText": "Optional resume text"
 }
 ```
+
+The evaluation response includes technical, communication, problem-solving, overall, feedback, and optional ATS scoring. Interview history stores the final score and ATS snapshot.
 
 ### History
 
@@ -308,10 +342,8 @@ For production, provide real secrets through your environment manager instead of
 - Webcam mock interview recording
 - Admin dashboard
 - Role-based access control
-- ATS keyword scoring dashboard
 - Performance charts and progress trends
 - Search, filter, sort, and pagination for history
-- Automated test suite
 - CI/CD pipeline
 
 ## Contributing

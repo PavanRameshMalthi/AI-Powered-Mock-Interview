@@ -44,6 +44,9 @@ const InterviewSetup = () => {
       localStorage.setItem("questions", JSON.stringify(response.questions));
       localStorage.setItem("answers", JSON.stringify([]));
       localStorage.setItem("interviewConfig", JSON.stringify(formData));
+      if (response.atsScore) {
+        localStorage.setItem("atsScore", JSON.stringify(response.atsScore));
+      }
       dismissToast(toastId);
       showSuccess("Interview generated");
       navigate("/interview-session");

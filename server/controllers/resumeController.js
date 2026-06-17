@@ -1,5 +1,6 @@
 const fs = require("fs/promises");
 const extractResumeText = require("../utils/resumeParser");
+const { scoreResumeForRole } = require("../utils/atsScorer");
 
 const uploadResume = async (req, res) => {
   if (!req.file) {
@@ -17,6 +18,7 @@ const uploadResume = async (req, res) => {
     res.status(200).json({
       success: true,
       resumeText,
+      atsScore: scoreResumeForRole({ resumeText }),
     });
   } catch {
     await fs.unlink(req.file.path).catch(() => {});
@@ -30,4 +32,20 @@ const uploadResume = async (req, res) => {
 
 module.exports = {
   uploadResume,
+  scoreResume: (req, res) => {
+    const resumeText = String(req.body.resumeText || "").trim();
+    const role = String(req.body.role || "").trim();
+
+    if (!resumeText) {
+      return res.status(400).json({
+        success: false,
+        message: "Resume text is required for ATS scoring",
+      });
+    }
+
+    res.json({
+      success: true,
+      atsScore: scoreResumeForRole({ resumeText, role }),
+    });
+  },
 };

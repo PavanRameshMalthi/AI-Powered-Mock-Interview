@@ -14,6 +14,7 @@ test("evaluates and renders scorecard", async () => {
     "interviewConfig",
     JSON.stringify({ role: "Frontend Developer" })
   );
+  localStorage.setItem("resumeText", "React JavaScript project resume");
   api.post.mockResolvedValue({
     data: {
       overall: 90,
@@ -21,6 +22,13 @@ test("evaluates and renders scorecard", async () => {
       communication: 91,
       problemSolving: 89,
       feedback: "Strong answer.",
+      atsScore: {
+        score: 84,
+        level: "Strong",
+        matchedKeywords: ["react", "javascript"],
+        missingKeywords: ["accessibility"],
+        recommendations: ["Add accessibility examples."],
+      },
     },
   });
 
@@ -34,6 +42,11 @@ test("evaluates and renders scorecard", async () => {
     expect(screen.getByText("90")).toBeInTheDocument();
   });
   expect(screen.getByText("Strong answer.")).toBeInTheDocument();
+  expect(screen.getByText(/ats resume fit/i)).toBeInTheDocument();
+  expect(api.post).toHaveBeenCalledWith(
+    "/evaluation/evaluate",
+    expect.objectContaining({ resumeText: "React JavaScript project resume" })
+  );
 });
 
 test("shows an error when interview state is missing", async () => {

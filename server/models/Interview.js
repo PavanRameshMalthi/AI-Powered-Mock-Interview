@@ -21,6 +21,20 @@ const interviewSchema = new mongoose.Schema(
       overall: Number,
       feedback: String,
     },
+    atsScore: {
+      score: Number,
+      level: String,
+      matchedKeywords: [String],
+      missingKeywords: [String],
+      sectionScores: {
+        contact: Number,
+        skills: Number,
+        experience: Number,
+        education: Number,
+        projects: Number,
+      },
+      recommendations: [String],
+    },
     resumeText: String,
   },
   { timestamps: true }

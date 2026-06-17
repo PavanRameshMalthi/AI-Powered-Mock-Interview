@@ -18,6 +18,7 @@ jest.mock("../../components/UI/Toast", () => ({
 test("generates interview questions and saves interview state", async () => {
   interviewService.generateQuestions.mockResolvedValue({
     questions: ["Question one?", "Question two?"],
+    atsScore: { score: 81, level: "Strong" },
   });
 
   render(
@@ -39,4 +40,8 @@ test("generates interview questions and saves interview state", async () => {
     "Question one?",
     "Question two?",
   ]);
+  expect(JSON.parse(localStorage.getItem("atsScore"))).toEqual({
+    score: 81,
+    level: "Strong",
+  });
 });

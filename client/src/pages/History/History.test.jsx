@@ -14,6 +14,7 @@ test("renders interview history rows", async () => {
         _id: "1",
         role: "Frontend Developer",
         score: 88,
+        atsScore: { score: 76 },
         createdAt: "2026-06-17T00:00:00.000Z",
       },
     ],
@@ -29,4 +30,5 @@ test("renders interview history rows", async () => {
     expect(screen.getByText("Frontend Developer")).toBeInTheDocument();
   });
   expect(screen.getByText("88%")).toBeInTheDocument();
+  expect(screen.getByText("76")).toBeInTheDocument();
 });

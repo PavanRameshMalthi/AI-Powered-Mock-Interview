@@ -32,6 +32,7 @@ const History = () => {
                 <tr>
                   <th>Role</th>
                   <th>Score</th>
+                  <th>ATS</th>
                   <th>Date</th>
                 </tr>
               </thead>
@@ -40,6 +41,7 @@ const History = () => {
                   <tr key={item._id}>
                     <td>{item.role}</td>
                     <td>{item.score || 0}%</td>
+                    <td>{item.atsScore?.score ?? "N/A"}</td>
                     <td>{new Date(item.createdAt).toLocaleDateString()}</td>
                   </tr>
                 ))}

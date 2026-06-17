@@ -410,6 +410,22 @@ textarea {
   white-space: pre-wrap;
 }
 
+.ats-summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 16px 0;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #0c121d;
+}
+
+.ats-summary strong,
+.ats-panel .section-heading strong {
+  color: var(--primary);
+}
+
 .progress-track,
 .meter {
   overflow: hidden;
@@ -451,6 +467,32 @@ textarea {
   grid-template-columns: 140px 1fr 40px;
   border-top: 0;
   padding: 0;
+}
+
+.ats-row {
+  margin: 18px 0;
+}
+
+.keyword-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.keyword-grid h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+.keyword-grid p,
+.recommendation-list {
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.recommendation-list {
+  margin: 16px 0 0;
+  padding-left: 20px;
 }
 
 .table-wrap {
@@ -529,7 +571,8 @@ th {
   }
 
   .form-row,
-  .score-row {
+  .score-row,
+  .keyword-grid {
     grid-template-columns: 1fr;
   }
 }

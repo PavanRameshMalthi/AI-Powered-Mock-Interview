@@ -6,6 +6,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 
 const {
   uploadResume,
+  scoreResume,
 } = require("../controllers/resumeController");
 
 router.post(
@@ -13,6 +14,12 @@ router.post(
   authMiddleware,
   upload.single("resume"),
   uploadResume
+);
+
+router.post(
+  "/ats-score",
+  authMiddleware,
+  scoreResume
 );
 
 module.exports = router;

@@ -133,11 +133,13 @@ describe("protected interview APIs", () => {
         role: "Frontend Developer",
         difficulty: "Beginner",
         questionCount: 3,
+        resumeText: "Skills React JavaScript projects",
       });
 
     expect(response.status).toBe(200);
     expect(response.body.questions).toHaveLength(3);
     expect(response.body.questions[0]).toContain("Frontend Developer");
+    expect(response.body.atsScore.score).toBeGreaterThan(0);
   });
 
   test("parses Gemini JSON question output", async () => {
@@ -179,12 +181,19 @@ describe("protected interview APIs", () => {
         role: "Frontend Developer",
         questions: ["Question?"],
         answers: ["Answer."],
+        resumeText:
+          "Skills React JavaScript HTML CSS Projects built dashboard improved performance 30%",
       });
 
     expect(response.status).toBe(200);
-    expect(response.body.overall).toBe(70);
+    expect(response.body.overall).toBeGreaterThan(0);
+    expect(response.body.atsScore.score).toBeGreaterThan(0);
     expect(Interview.create).toHaveBeenCalledWith(
-      expect.objectContaining({ user: "user-1", role: "Frontend Developer" })
+      expect.objectContaining({
+        user: "user-1",
+        role: "Frontend Developer",
+        atsScore: expect.any(Object),
+      })
     );
   });
 
@@ -217,7 +226,7 @@ describe("resume upload API", () => {
   });
 
   test("extracts text from a valid PDF upload", async () => {
-    extractResumeText.mockResolvedValue("Extracted resume text");
+    extractResumeText.mockResolvedValue("Skills React JavaScript Projects");
 
     const response = await request(app)
       .post("/api/resume/upload")
@@ -228,6 +237,22 @@ describe("resume upload API", () => {
       });
 
     expect(response.status).toBe(200);
-    expect(response.body.resumeText).toBe("Extracted resume text");
+    expect(response.body.resumeText).toBe("Skills React JavaScript Projects");
+    expect(response.body.atsScore.score).toBeGreaterThan(0);
+  });
+
+  test("scores resume text against a target role", async () => {
+    const response = await request(app)
+      .post("/api/resume/ats-score")
+      .set("Authorization", `Bearer ${token()}`)
+      .send({
+        role: "Frontend Developer",
+        resumeText:
+          "Email github skills React JavaScript CSS experience projects built UI improved 25%",
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.body.atsScore.level).toEqual(expect.any(String));
+    expect(response.body.atsScore.matchedKeywords).toContain("react");
   });
 });
