@@ -1,27 +1,19 @@
+```jsx
 import toast from "react-hot-toast";
 
 export const showSuccess = (message) => {
-  toast.success(message, {
-    duration: 3000,
-  });
+  toast.success(message);
 };
 
 export const showError = (message) => {
-  toast.error(message, {
-    duration: 4000,
-  });
-};
-
-export const showInfo = (message) => {
-  toast(message, {
-    duration: 3000,
-  });
+  toast.error(message);
 };
 
 export const showLoading = (message) => {
   return toast.loading(message);
 };
 
-export const dismissToast = (toastId) => {
-  toast.dismiss(toastId);
+export const dismissToast = (id) => {
+  toast.dismiss(id);
 };
+```
