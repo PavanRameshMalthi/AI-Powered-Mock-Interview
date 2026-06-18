@@ -1,36 +1,53 @@
 # Test Report
 
-Date: 2026-06-18
+Test date: 2026-06-19
 
 ## Commands Run
 
-| Command | Result |
-| --- | --- |
-| `npm.cmd test -- --runInBand` in `server` | PASS |
-| `npm.cmd test -- --runInBand` in `client` | PASS |
-| `npm.cmd run build` in `client` | PASS |
+- `server`: `npm.cmd test`
+- `client`: `npm.cmd test -- --runInBand`
+- `client`: `npm.cmd run lint`
+- `client`: `npm.cmd run build`
+- `client`: `npm.cmd audit --audit-level=moderate`
+- `server`: `npm.cmd audit --audit-level=moderate`
 
 ## Results
 
-| Suite | Tests | Status |
-| --- | ---: | --- |
-| Server Jest/Supertest | 35 passed | PASS |
-| Client Jest/React Testing Library | 30 passed | PASS |
-| Vite production build | Build completed | PASS |
+- Server tests: passed, 37 tests.
+- Client tests: passed, 30 tests.
+- Client lint: passed.
+- Client production build: passed.
+- Client audit: passed after dependency fix, 0 vulnerabilities.
+- Server audit: passed, 0 vulnerabilities.
 
-## Coverage Highlights
+## Coverage Snapshot
 
-- Authentication: signup validation, duplicate signup, login success, invalid login, malformed login, weak password.
-- JWT: missing token, invalid token, expired token, tampered token.
-- Resume upload: missing file, PDF upload, DOCX rejection, TXT rejection, corrupted PDF rejection, large file rejection.
-- Interview: generation fallback, Gemini parsing, invalid evaluation payload, missing/invalid interview input.
-- History: list, delete, plural delete API, bulk delete, restore.
-- Security: NoSQL injection rejection and protected admin route checks.
-- AI scoring: wrong answers remain capped even if Gemini returns high scores.
+- Server statement coverage: 69.37%.
+- Client statement coverage: 62.93%.
 
-## Skipped Or Not Fully Automated
+## Functional Areas Covered By Existing Tests
 
-- Full browser E2E signup/login/logout/refresh journey.
-- Lighthouse performance/accessibility audits.
-- Real Gemini API scoring quality tests.
-- Rate limiter threshold test with isolated process state.
+- Authentication validation and login/register behavior
+- Password strength component behavior
+- Protected route behavior
+- Resume upload page behavior
+- Interview setup/session behavior
+- Dashboard, history, admin, landing, login, register, results page rendering
+- API/service behavior for core client services
+- Server API routes, middleware, validation, and fallback scoring paths
+
+## E2E Audit Notes
+
+Manual/code-path audit confirms the app supports:
+
+- Register, login, logout, JWT validation, and protected routes
+- Interview start, answer capture, evaluation, saved result, history view, delete/restore
+- PDF resume upload, large-file rejection, corrupted-file rejection, and DOCX/non-PDF rejection
+- Dashboard statistics and analytics panels
+- Admin summary, user management, and report export paths
+
+## Recommended Next Tests
+
+- Add Playwright E2E tests for auth -> resume -> interview -> results -> history.
+- Add mocked upload tests for corrupted PDFs and oversized files.
+- Add dashboard analytics unit tests for weekly, monthly, role, and skill trend rendering.

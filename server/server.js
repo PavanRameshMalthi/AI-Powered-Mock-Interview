@@ -33,8 +33,10 @@ const validateRuntimeConfig = () => {
   }
 
   if (process.env.NODE_ENV === "production") {
-    if (!process.env.CLIENT_URL || process.env.CLIENT_URL.includes("localhost")) {
-      warnings.push("CLIENT_URL should be set to the deployed frontend origin in production.");
+    const frontendOrigin = process.env.CLIENT_URL || process.env.FRONTEND_URL || "";
+
+    if (!frontendOrigin || frontendOrigin.includes("localhost")) {
+      warnings.push("CLIENT_URL or FRONTEND_URL should be set to the deployed frontend origin in production.");
     }
 
     if (!process.env.SERVER_URL || process.env.SERVER_URL.includes("localhost")) {

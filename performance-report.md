@@ -1,28 +1,38 @@
 # Performance Report
 
-Date: 2026-06-18
+Audit date: 2026-06-19
 
-## Build Result
+## Build Performance
 
-The client production build completed successfully with Vite.
+`npm.cmd run build` completed successfully for the client.
 
-## Bundle Snapshot
+Key production assets:
 
-| Asset | Gzip Size |
-| --- | ---: |
-| Main app bundle | 109.59 kB |
-| jsPDF bundle | 129.50 kB |
-| html2canvas bundle | 46.78 kB |
-| CSS | 3.06 kB |
+- CSS bundle: about 13.73 kB raw, 3.66 kB gzip.
+- Main app bundle: about 350.41 kB raw, 111.41 kB gzip.
+- PDF export chunks are split through dynamic `import("jspdf")`.
+- jsPDF/html2canvas-related chunks remain the largest assets and load only when export actions are used.
 
-## Observations
+## Backend Performance Controls
 
-- The app builds quickly and has moderate bundle sizes.
-- PDF/certificate dependencies are the largest client-side payloads.
-- No Lighthouse score was generated in this pass because a browser audit target was not launched.
+- MongoDB indexes exist for user/history lookup and score/date sorting.
+- History endpoints limit returned records.
+- Analytics endpoints limit source collections to recent 100 records.
+- Upload processing removes files after parse completion/failure.
+- JSON/urlencoded payloads are capped at 1 MB.
+- Resume uploads are capped at 5 MB.
 
-## Recommendations
+## Frontend Performance Controls
 
-- Lazy-load PDF/certificate utilities only from the Results page.
-- Add Lighthouse CI with target scores of 95+ for performance, accessibility, best practices, and SEO.
-- Add route-level code splitting if the app grows further.
+- Vite production bundling.
+- Route-level pages are compact and mostly data-driven.
+- PDF/certificate library is dynamically imported.
+- Empty states avoid unnecessary repeated requests when no data exists.
+- Dashboard analytics are fetched together with summary data.
+
+## Remaining Optimizations
+
+- Add route-level lazy loading for large page chunks.
+- Consider a dedicated chart library only if richer charts are needed; current CSS charts keep bundle size lower.
+- Add API caching headers where responses are safe to cache.
+- Add Lighthouse CI after deployment to measure Performance, Accessibility, Best Practices, and SEO against real hosted URLs.

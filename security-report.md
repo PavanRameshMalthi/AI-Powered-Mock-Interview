@@ -1,32 +1,39 @@
 # Security Report
 
-Date: 2026-06-18
+Audit date: 2026-06-19
 
-## Implemented Protections
+## Automated Dependency Security
 
-- Helmet is enabled with cross-origin resource policy configuration.
-- CORS allows configured frontend origins and credentials.
-- Global API rate limiting is enabled.
-- Login-specific rate limiting is enabled.
-- Request bodies, params, and query strings are sanitized against NoSQL operator keys.
-- Auth routes use express-validator rules.
-- JWT verification protects private routes.
-- Refresh tokens are stored as hashes server-side and sent via HTTP-only cookies.
-- Resume uploads are limited to one file, 5 MB max, PDF MIME type plus `.pdf` extension, and PDF signature validation.
+- Client npm audit: 0 vulnerabilities after `npm audit fix`.
+- Server npm audit: 0 vulnerabilities.
+- Fixed moderate DOMPurify advisory by updating transitive dependency to `3.4.11`.
 
-## Fixes Verified
+## Implemented Security Controls
 
-- NoSQL operator injection in login payloads is rejected before querying.
-- Expired and tampered JWTs are rejected.
-- Corrupted, TXT, DOCX, and oversized resume uploads are rejected.
-- Wrong/irrelevant interview answers are capped in the low score band.
+- JWT bearer authentication for protected routes.
+- Password hashing with bcrypt.
+- Password strength validation on registration/change/reset flows.
+- Helmet security headers.
+- CORS allowlist using `CLIENT_URL` or `FRONTEND_URL`.
+- Rate limiting on all API routes and stricter login rate limiting.
+- Request body/query/param sanitization against NoSQL operator injection.
+- Express-validator rules on auth, resume, interview, history, and admin operations.
+- Upload size limit of 5 MB and single-file enforcement.
+- PDF MIME, extension, and file-signature validation.
+- Uploaded resume files are removed after parsing or parse failure.
+- Secrets are excluded through `.gitignore`; `.env.example` documents required variables.
 
-## Residual Risks
+## Threat Checks
 
-- The current tests do not run a real browser XSS probe against rendered pages.
-- Rate limiter tests are not isolated in a dedicated app instance, so they are not exhaustively automated.
-- Production secrets should be managed outside committed files and rotated if exposed.
+- XSS: No `dangerouslySetInnerHTML`, `innerHTML`, or direct DOM injection found in source.
+- NoSQL injection: `$` and dotted keys are stripped from request inputs before route handlers.
+- JWT tampering: tokens are verified with `JWT_SECRET`; invalid/expired tokens return 401.
+- Sensitive data exposure: user password fields are excluded by schema defaults and auth responses do not return passwords.
+- CSRF: API primarily uses bearer tokens; cookies are enabled for compatibility, so production deployments should keep strict CORS and SameSite cookie settings if cookie auth is expanded.
 
-## Recommendation
+## Recommendations
 
-Add browser-based security regression tests for stored/reflected XSS and a dedicated rate-limiter integration test harness with isolated process state.
+- Use a 32+ character `JWT_SECRET` in all non-test environments.
+- Rotate secrets before public deployment.
+- Add centralized security logging for repeated failed logins and upload failures.
+- Add SAST/DAST scans in CI for ongoing releases.

@@ -1,32 +1,44 @@
-# AI Mock Interview Audit Report
+# Project Audit Report
 
-Date: 2026-06-18
+Audit date: 2026-06-19
 
-## Summary
+## Scope
 
-The project is a MERN-style AI mock interview platform with working auth, protected APIs, resume parsing, interview generation, evaluation, history management, analytics, PDF reports, and certificate export. The current critical blockers were authentication env parsing, duplicate indexes, local API routing, and overly generous evaluation scoring.
+Audited the AI Mock Interview Platform across client, server, routing, controllers, middleware, models, services, utilities, tests, reports, and repository hygiene.
 
-## Findings And Fixes
+## Automated Checks
 
-| Area | Issue | Root Cause | Status |
-| --- | --- | --- | --- |
-| Authentication | Login/signup failed in local dev | Vite had no `/api` proxy, so requests could hit the frontend dev server instead of Express | Fixed |
-| JWT config | `JWT_SECRET` warning despite long secret | `.env` secret contained `#` and needed quotes; server env loading now also targets `server/.env` explicitly | Fixed |
-| User model | Duplicate index warnings for `email` and `phone` | Fields had inline index options plus `userSchema.index()` declarations | Fixed |
-| AI scoring | Wrong answers could receive high scores | Evaluation controller did not use the relevance-aware local evaluation engine and trusted Gemini scores too directly | Fixed |
-| History API | Task expected `DELETE /api/interviews/:id` | Existing delete lived under `/api/history/:id` | Fixed by mounting history routes at `/api/interviews` too |
+- Server tests: `npm.cmd test` in `server` passed, 37 tests.
+- Client tests: `npm.cmd test -- --runInBand` in `client` passed, 30 tests.
+- Client lint: `npm.cmd run lint` passed.
+- Client production build: `npm.cmd run build` passed.
+- Server npm audit: 0 vulnerabilities.
+- Client npm audit after fix: 0 vulnerabilities.
 
-## Existing Strengths
+## Findings And Actions
 
-- Helmet, CORS credentials, rate limiting, request sanitization, validation middleware, and centralized error handling are present.
-- Auth includes registration, login, refresh tokens, logout, password change/reset, and email verification endpoints.
-- History supports search, filtering, soft delete, bulk delete, restore, and undo in the UI.
-- Results page includes PDF interview report and certificate generation.
-- Dashboard includes interview analytics, score trends, ATS trends, weak areas, and strong areas.
+- Fixed production runtime config validation so either `CLIENT_URL` or `FRONTEND_URL` satisfies the frontend origin requirement.
+- Fixed one moderate transitive client dependency vulnerability by running `npm audit fix`, updating DOMPurify to `3.4.11` through the lockfile.
+- Confirmed auth, resume, interview, evaluation, history, analytics, and admin routes are wired.
+- Confirmed protected frontend routes use `ProtectedRoute` and API requests attach bearer tokens from local/session storage.
+- Confirmed NoSQL operator sanitization strips `$` and dotted keys from body, query, and params.
+- Confirmed uploaded resumes are PDF-only, size-limited, signature-checked, parsed, and unlinked after processing.
+- Confirmed generated build/test artifacts are ignored and were removed from the workspace.
+
+## Product Coverage
+
+- Landing page: implemented with hero, stats, features, workflow, testimonials, FAQ, and CTA.
+- Auth: register, login, logout, protected routes, session persistence, password strength checks.
+- Resume/ATS: PDF upload, ATS scoring, corrupted/non-PDF rejection path.
+- Interview: setup, generated questions, session answer capture, evaluation, saved results.
+- Results: scorecard, score bars, badges, AI feedback, question-level coaching, PDF and certificate export.
+- History: search, filter, sort, delete, bulk delete, restore, recycle bin, undo delete, deep view.
+- Dashboard: summary metrics, recent interviews, score trends, ATS trends, weekly/monthly/role/skill analytics.
+- Admin: summary, user management, reports/export route.
 
 ## Remaining Recommendations
 
-- Add a formal `AuthContext` only if the app grows beyond local/session storage patterns.
-- Add Playwright or Cypress for true end-to-end browser tests.
-- Add Lighthouse CI for measurable performance/accessibility budgets.
-- Move generated PDFs/certificates to a reusable utility if export features expand.
+- Add true DOCX parsing only if the product requirement changes from PDF-only resumes.
+- Add browser-based E2E coverage with Playwright or Cypress for full user journeys.
+- Add more tests for dashboard/history branch behavior to raise frontend coverage.
+- Add public certificate verification endpoint/page if QR verification becomes required beyond generated certificate IDs.
