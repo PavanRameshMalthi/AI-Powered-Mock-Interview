@@ -1,5 +1,6 @@
 const model = require("../utils/gemini");
 const { scoreResumeForRole } = require("../utils/atsScorer");
+const { asyncHandler, AppError } = require("../middleware/errorMiddleware");
 
 const createFallbackQuestions = ({
   role,
@@ -59,8 +60,7 @@ const parseQuestions = (responseText) => {
     .filter(Boolean);
 };
 
-const generateQuestions = async (req, res) => {
-  try {
+const generateQuestions = asyncHandler(async (req, res) => {
     const role = String(req.body.role || req.body.jobRole || "").trim();
     const experience = String(req.body.experience || "Entry level").trim();
     const difficulty = String(req.body.difficulty || "Beginner").trim();
@@ -71,10 +71,7 @@ const generateQuestions = async (req, res) => {
     );
 
     if (!role) {
-      return res.status(400).json({
-        success: false,
-        message: "Job role is required",
-      });
+      throw new AppError("Job role is required", 400);
     }
 
     const prompt = `
@@ -126,14 +123,7 @@ Return only a JSON array of strings. Include technical, behavioral, project, and
         ? scoreResumeForRole({ resumeText, role })
         : null,
     });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message:
-        error.message || "Failed to generate interview questions",
-    });
-  }
-};
+});
 
 module.exports = {
   generateQuestions,

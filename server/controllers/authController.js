@@ -41,7 +41,9 @@ const createRefreshToken = () => crypto.randomBytes(48).toString("hex");
 const findUserByEmailWithSecrets = async (email) => {
   const query = User.findOne({ email });
   if (query && typeof query.select === "function") {
-    return query.select("+password +refreshTokenHash");
+    return query.select(
+      "+password +refreshTokenHash +emailVerificationTokenHash +passwordResetTokenHash"
+    );
   }
 
   return query;
@@ -77,18 +79,27 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   const hashedPassword = await bcrypt.hash(password, 12);
+  const emailVerificationToken = createRefreshToken();
   const user = await User.create({
     name,
     email,
     password: hashedPassword,
     authProvider: "local",
+    emailVerificationTokenHash: hashToken(emailVerificationToken),
+    emailVerificationExpires: new Date(Date.now() + 24 * 60 * 60 * 1000),
   });
 
-  res.status(201).json({
+  const payload = {
     success: true,
     message: "User registered successfully",
     user: sanitizeUser(user),
-  });
+  };
+
+  if (process.env.NODE_ENV !== "production") {
+    payload.emailVerificationToken = emailVerificationToken;
+  }
+
+  res.status(201).json(payload);
 });
 
 const loginUser = asyncHandler(async (req, res) => {
@@ -155,7 +166,7 @@ const changePassword = asyncHandler(async (req, res) => {
 
 const forgotPassword = asyncHandler(async (req, res) => {
   const email = String(req.body.email || "").trim().toLowerCase();
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email }).select("+passwordResetTokenHash");
 
   if (user) {
     const resetToken = createRefreshToken();
@@ -199,6 +210,53 @@ const resetPassword = asyncHandler(async (req, res) => {
   res.json({ success: true, message: "Password reset successfully" });
 });
 
+const verifyEmail = asyncHandler(async (req, res) => {
+  const tokenHash = hashToken(String(req.body.token || ""));
+  const user = await User.findOne({
+    emailVerificationTokenHash: tokenHash,
+    emailVerificationExpires: { $gt: new Date() },
+  }).select("+emailVerificationTokenHash");
+
+  if (!user) {
+    throw new AppError("Verification token is invalid or expired", 400);
+  }
+
+  user.isEmailVerified = true;
+  user.emailVerificationTokenHash = undefined;
+  user.emailVerificationExpires = undefined;
+  await user.save();
+
+  res.json({ success: true, message: "Email verified successfully" });
+});
+
+const resendEmailVerification = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user.id).select("+emailVerificationTokenHash");
+
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+
+  if (user.isEmailVerified) {
+    return res.json({ success: true, message: "Email is already verified" });
+  }
+
+  const emailVerificationToken = createRefreshToken();
+  user.emailVerificationTokenHash = hashToken(emailVerificationToken);
+  user.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  await user.save();
+
+  const payload = {
+    success: true,
+    message: "Verification instructions have been sent.",
+  };
+
+  if (process.env.NODE_ENV !== "production") {
+    payload.emailVerificationToken = emailVerificationToken;
+  }
+
+  res.json(payload);
+});
+
 const providerUnavailable = (provider) =>
   asyncHandler(async (req, res) => {
     res.status(501).json({
@@ -215,6 +273,8 @@ module.exports = {
   changePassword,
   forgotPassword,
   resetPassword,
+  verifyEmail,
+  resendEmailVerification,
   googleAuth: providerUnavailable("Google"),
   linkedinAuth: providerUnavailable("LinkedIn"),
   phoneAuth: providerUnavailable("Phone OTP"),

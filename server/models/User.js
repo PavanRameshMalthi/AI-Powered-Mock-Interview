@@ -63,9 +63,20 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
 
-    refreshTokenHash: String,
-    passwordResetTokenHash: String,
+    refreshTokenHash: {
+      type: String,
+      select: false,
+    },
+    passwordResetTokenHash: {
+      type: String,
+      select: false,
+    },
     passwordResetExpires: Date,
+    emailVerificationTokenHash: {
+      type: String,
+      select: false,
+    },
+    emailVerificationExpires: Date,
 
     role: {
       type: String,
@@ -86,5 +97,6 @@ userSchema.index(
   }
 );
 userSchema.index({ createdAt: -1 });
+userSchema.index({ phone: 1 });
 
 module.exports = mongoose.model("User", userSchema);

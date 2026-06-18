@@ -4,11 +4,24 @@ process.env.FRONTEND_URL = "http://localhost:5173";
 jest.mock("../models/User", () => ({
   findOne: jest.fn(),
   create: jest.fn(),
+  countDocuments: jest.fn(),
+  find: jest.fn(),
+  findByIdAndDelete: jest.fn(),
 }));
 
 jest.mock("../models/Interview", () => ({
   create: jest.fn(),
   find: jest.fn(),
+  countDocuments: jest.fn(),
+  distinct: jest.fn(),
+  deleteMany: jest.fn(),
+}));
+
+jest.mock("../models/AtsReport", () => ({
+  create: jest.fn(),
+  find: jest.fn(),
+  countDocuments: jest.fn(),
+  deleteMany: jest.fn(),
 }));
 
 jest.mock("../utils/gemini", () => ({
@@ -22,6 +35,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const Interview = require("../models/Interview");
+const AtsReport = require("../models/AtsReport");
 const model = require("../utils/gemini");
 const extractResumeText = require("../utils/resumeParser");
 const { app } = require("../server");
@@ -102,6 +116,34 @@ describe("auth API", () => {
     expect(response.status).toBe(200);
     expect(response.body.token).toEqual(expect.any(String));
     expect(response.body.user.password).toBeUndefined();
+  });
+
+  test("verifies an email token", async () => {
+    const save = jest.fn();
+    User.findOne.mockReturnValue({
+      select: jest.fn().mockResolvedValue({
+        isEmailVerified: false,
+        emailVerificationTokenHash: "hash",
+        save,
+      }),
+    });
+
+    const crypto = require("crypto");
+    const rawToken = "a".repeat(48);
+    const response = await request(app).post("/api/auth/verify-email").send({
+      token: rawToken,
+    });
+
+    expect(response.status).toBe(200);
+    expect(User.findOne).toHaveBeenCalledWith(
+      expect.objectContaining({
+        emailVerificationTokenHash: crypto
+          .createHash("sha256")
+          .update(rawToken)
+          .digest("hex"),
+      })
+    );
+    expect(save).toHaveBeenCalled();
   });
 });
 
@@ -212,6 +254,44 @@ describe("protected interview APIs", () => {
     expect(response.status).toBe(200);
     expect(response.body.interviews).toHaveLength(1);
     expect(Interview.find).toHaveBeenCalledWith({ user: "user-1" });
+  });
+
+  test("returns admin platform summary for admins", async () => {
+    const adminToken = jwt.sign({ id: "admin-1", role: "admin" }, process.env.JWT_SECRET);
+    const userSelect = jest.fn().mockResolvedValue([
+      { _id: "user-1", name: "Test User", email: "test@example.com" },
+    ]);
+    const userLimit = jest.fn(() => ({ select: userSelect }));
+    const userSort = jest.fn(() => ({ limit: userLimit }));
+    const interviewSelect = jest.fn().mockResolvedValue([
+      { _id: "interview-1", role: "Frontend Developer", score: 88 },
+    ]);
+    const populate = jest.fn(() => ({ select: interviewSelect }));
+    const interviewLimit = jest.fn(() => ({ populate }));
+    const interviewSort = jest.fn(() => ({ limit: interviewLimit }));
+
+    User.countDocuments.mockResolvedValue(3);
+    Interview.countDocuments.mockResolvedValue(5);
+    AtsReport.countDocuments.mockResolvedValue(4);
+    User.find.mockReturnValue({ sort: userSort });
+    Interview.find.mockReturnValue({ sort: interviewSort });
+    Interview.distinct.mockResolvedValue(["user-1"]);
+
+    const response = await request(app)
+      .get("/api/admin/summary")
+      .set("Authorization", `Bearer ${adminToken}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body.summary.totalUsers).toBe(3);
+    expect(response.body.summary.activeUsers).toBe(1);
+  });
+
+  test("blocks admin APIs for students", async () => {
+    const response = await request(app)
+      .get("/api/admin/summary")
+      .set("Authorization", `Bearer ${token()}`);
+
+    expect(response.status).toBe(403);
   });
 });
 

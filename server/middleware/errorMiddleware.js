@@ -26,7 +26,8 @@ const errorHandler = (error, req, res, next) => {
   const statusCode =
     error.statusCode ||
     (error.code === 11000 ? 409 : undefined) ||
-    (error.name === "MulterError" || error.name === "ValidationError" ? 400 : 500);
+    (error.name === "MulterError" || error.name === "ValidationError" ? 400 : undefined) ||
+    (error.message === "Only PDF resumes are allowed" ? 400 : 500);
 
   if (statusCode >= 500) {
     logger.error(
@@ -44,6 +45,9 @@ const errorHandler = (error, req, res, next) => {
     message:
       error.code === 11000
         ? "Duplicate record already exists"
+        :
+      error.name === "MulterError" && error.code === "LIMIT_FILE_SIZE"
+        ? "Resume must be smaller than 5 MB"
         :
       statusCode >= 500 && process.env.NODE_ENV === "production"
         ? "Something went wrong"

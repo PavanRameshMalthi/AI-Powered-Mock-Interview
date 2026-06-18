@@ -12,6 +12,7 @@ const resumeRoutes = require("./routes/resumeRoutes");
 const interviewRoutes = require("./routes/interviewRoutes");
 const evaluationRoutes = require("./routes/evaluationRoutes");
 const historyRoutes = require("./routes/historyRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 const sanitizeRequest = require("./middleware/sanitizeMiddleware");
 const { errorHandler, notFound } = require("./middleware/errorMiddleware");
 const logger = require("./utils/logger");
@@ -29,6 +30,16 @@ const validateRuntimeConfig = () => {
     warnings.push("GEMINI_API_KEY is missing. AI routes will use local fallbacks.");
   }
 
+  if (process.env.NODE_ENV === "production") {
+    if (!process.env.CLIENT_URL || process.env.CLIENT_URL.includes("localhost")) {
+      warnings.push("CLIENT_URL should be set to the deployed frontend origin in production.");
+    }
+
+    if (!process.env.SERVER_URL || process.env.SERVER_URL.includes("localhost")) {
+      warnings.push("SERVER_URL should be set to the deployed API origin in production.");
+    }
+  }
+
   warnings.forEach((warning) => logger.warn(warning));
 };
 
@@ -40,7 +51,11 @@ const allowedOrigins = (
   .split(",")
   .map((origin) => origin.trim());
 
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  })
+);
 app.use(
   cors({
     origin: (origin, cb) => {
@@ -91,6 +106,7 @@ app.use("/api/resume", resumeRoutes);
 app.use("/api/interview", interviewRoutes);
 app.use("/api/evaluation", evaluationRoutes);
 app.use("/api/history", historyRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.get("/", (req, res) =>
   res.json({ success: true, message: "AI Mock Interview API Running" })

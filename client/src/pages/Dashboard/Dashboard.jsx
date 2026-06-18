@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaChartLine, FaFileUpload, FaHistory, FaSignOutAlt } from "react-icons/fa";
+import { FaChartLine, FaFileUpload, FaHistory, FaShieldAlt, FaSignOutAlt } from "react-icons/fa";
 import dashboardService from "../../services/dashboardService";
 
 const Dashboard = () => {
@@ -85,6 +85,16 @@ const Dashboard = () => {
             <p>Review recent results and track progress over time.</p>
           </div>
         </Link>
+
+        {user?.role === "admin" ? (
+          <Link className="action-card" to="/admin">
+            <FaShieldAlt aria-hidden="true" />
+            <div>
+              <h2>Admin panel</h2>
+              <p>Monitor users, interviews, ATS reports, and exports.</p>
+            </div>
+          </Link>
+        ) : null}
       </section>
 
       <section className="panel">

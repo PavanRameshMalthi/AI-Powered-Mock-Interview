@@ -39,6 +39,10 @@ const resetPasswordRules = [
   strongPassword(),
 ];
 
+const verifyEmailRules = [
+  body("token").isString().isLength({ min: 20 }).withMessage("Verification token is invalid"),
+];
+
 module.exports = {
   passwordRule,
   registerRules,
@@ -46,4 +50,5 @@ module.exports = {
   changePasswordRules,
   forgotPasswordRules,
   resetPasswordRules,
+  verifyEmailRules,
 };

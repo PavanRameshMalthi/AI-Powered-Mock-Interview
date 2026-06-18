@@ -10,8 +10,10 @@ AI Mock Interview is a full-stack MERN-style web application for practicing role
 - ATS resume fit scoring with keyword, section, impact, and role-alignment checks
 - AI question generation with a local fallback when the AI provider is unavailable
 - Guided interview session with answer persistence
+- Voice interview support with question playback, microphone answers, and text fallback
 - AI evaluation with deterministic local fallback scoring and saved interview history
 - PDF scorecard export
+- Admin dashboard for platform metrics, user management, and report export
 - Default dark mode UI
 - Responsive layouts for mobile, tablet, and desktop
 - Security middleware: Helmet, CORS allowlist, rate limiting, upload size/type limits
@@ -203,6 +205,19 @@ http://localhost:5000/api
 }
 ```
 
+`POST /auth/verify-email`
+
+```json
+{
+  "token": "email-verification-token"
+}
+```
+
+`POST /auth/resend-verification`
+
+- Protected route
+- Generates a new email verification token. In development, the token is returned in the response for local testing.
+
 ### Resume
 
 `POST /resume/upload`
@@ -281,6 +296,27 @@ The evaluation response includes technical, communication, problem-solving, over
 
 - Protected route
 - Returns the latest 25 saved interview evaluations for the current user.
+
+`GET /history/analytics`
+
+- Protected route
+- Returns interview trends, ATS trends, strong skill areas, weak skill areas, and summary metrics.
+
+### Admin
+
+Admin routes require a JWT for a user with `role: "admin"`.
+
+`GET /admin/summary`
+
+- Returns total users, total interviews, ATS reports, active users, latest users, and recent interviews.
+
+`GET /admin/export`
+
+- Returns exportable JSON for recent interview and ATS reports.
+
+`DELETE /admin/users/:userId`
+
+- Deletes a user and related interview/ATS records.
 
 ## Screenshots
 

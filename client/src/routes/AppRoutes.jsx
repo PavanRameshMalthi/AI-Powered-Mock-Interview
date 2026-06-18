@@ -11,6 +11,7 @@ import InterviewSetup from "../pages/InterviewSetup/InterviewSetup";
 import InterviewSession from "../pages/InterviewSession/InterviewSession";
 import Results from "../pages/Results/Results";
 import History from "../pages/History/History";
+import Admin from "../pages/Admin/Admin";
 
 const AppRoutes = () => {
   return (
@@ -70,6 +71,15 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <History />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute>
+            <Admin />
           </ProtectedRoute>
         }
       />

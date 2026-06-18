@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const logger = require("../utils/logger");
 
 const connectDB = async () => {
   if (!process.env.MONGO_URI) {
@@ -6,11 +7,11 @@ const connectDB = async () => {
   }
 
   const conn = await mongoose.connect(process.env.MONGO_URI);
-  console.log(`MongoDB connected: ${conn.connection.host}`);
+  logger.info(`MongoDB connected: ${conn.connection.host}`);
 };
 
 mongoose.connection.on("error", (err) => {
-  console.error("MongoDB error:", err.message);
+  logger.error({ err }, "MongoDB error");
 });
 
 module.exports = connectDB;
