@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const Interview = require("../models/Interview");
 const AtsReport = require("../models/AtsReport");
 const { scoreResumeForRole } = require("../utils/atsScorer");
+const { evaluateAnswers } = require("../utils/evaluationEngine");
 const { asyncHandler, AppError } = require("../middleware/errorMiddleware");
 const logger = require("../utils/logger");
 
@@ -10,25 +11,6 @@ const clampScore = (value) => {
   const score = Number(value);
   if (!Number.isFinite(score)) return 0;
   return Math.min(Math.max(Math.round(score), 0), 100);
-};
-
-const buildFallbackEvaluation = ({ answers }) => {
-  const joinedAnswers = answers.join(" ");
-  const wordCount = joinedAnswers.split(/\s+/).filter(Boolean).length;
-  const exampleSignals = (joinedAnswers.match(
-    /\b(example|because|result|impact|tradeoff|built|improved|measured|tested)\b/gi
-  ) || []).length;
-  const answeredRatio = answers.filter((answer) => answer.trim().length >= 12).length / answers.length;
-  const base = clampScore(45 + answeredRatio * 25 + Math.min(wordCount / 8, 20) + Math.min(exampleSignals * 3, 10));
-
-  return {
-    technical: base,
-    communication: clampScore(base + (wordCount > 80 ? 5 : -4)),
-    problemSolving: clampScore(base + (exampleSignals > 2 ? 6 : -3)),
-    overall: base,
-    feedback:
-      "Evaluation used the local scoring fallback. Strengthen answers with role-specific examples, measurable outcomes, and clear tradeoffs.",
-  };
 };
 
 const parseEvaluation = (responseText) => {
@@ -47,6 +29,27 @@ const parseEvaluation = (responseText) => {
   };
 };
 
+const getBandCeiling = (score) => {
+  if (score <= 25) return 25;
+  if (score <= 60) return 60;
+  if (score <= 85) return 85;
+  return 100;
+};
+
+const reconcileEvaluation = (aiEvaluation, localEvaluation) => {
+  const ceiling = getBandCeiling(localEvaluation.overall);
+  const cap = (value) => clampScore(Math.min(value, ceiling));
+
+  return {
+    technical: cap(aiEvaluation.technical),
+    communication: cap(aiEvaluation.communication),
+    problemSolving: cap(aiEvaluation.problemSolving),
+    overall: cap(aiEvaluation.overall),
+    feedback: aiEvaluation.feedback || localEvaluation.feedback,
+    questionScores: localEvaluation.questionScores,
+  };
+};
+
 const evaluateInterview = asyncHandler(async (req, res) => {
     const role = String(req.body.role || "").trim();
     const difficulty = String(req.body.difficulty || "Beginner").trim();
@@ -62,12 +65,27 @@ const evaluateInterview = asyncHandler(async (req, res) => {
       throw new AppError("Role, questions, and answers are required", 400);
     }
 
+    const localEvaluation = evaluateAnswers({
+      role,
+      difficulty,
+      questions,
+      answers,
+    });
+
     const prompt = `
-Evaluate this mock interview objectively.
+Evaluate this mock interview objectively and strictly.
 
 Role: ${role}
 Questions: ${JSON.stringify(questions)}
 Answers: ${JSON.stringify(answers)}
+
+Scoring bands:
+- Wrong, empty, irrelevant, hallucinated, or nonsensical answers: 0-25
+- Partially correct answers: 26-60
+- Mostly correct answers: 61-85
+- Correct, complete, role-specific answers: 86-100
+
+Do not award high scores for incorrect or irrelevant answers. Penalize answers that do not directly answer the question even if they are long.
 
 Return only JSON in this shape:
 {
@@ -79,13 +97,16 @@ Return only JSON in this shape:
 }
 `;
 
-    let evaluation = buildFallbackEvaluation({ answers });
+    let evaluation = localEvaluation;
 
     try {
       const result = await model.generateContent(prompt);
-      evaluation = parseEvaluation(result.response.text());
+      evaluation = reconcileEvaluation(
+        parseEvaluation(result.response.text()),
+        localEvaluation
+      );
     } catch {
-      evaluation = buildFallbackEvaluation({ answers });
+      evaluation = localEvaluation;
     }
 
     const atsScore = resumeText

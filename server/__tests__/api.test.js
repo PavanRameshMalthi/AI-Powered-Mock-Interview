@@ -338,6 +338,43 @@ describe("protected interview APIs", () => {
     );
   });
 
+  test("caps clearly wrong answers even when Gemini returns high scores", async () => {
+    model.generateContent.mockResolvedValue({
+      response: {
+        text: () =>
+          JSON.stringify({
+            technical: 95,
+            communication: 90,
+            problemSolving: 92,
+            overall: 94,
+            feedback: "Overly generous model response.",
+          }),
+      },
+    });
+    Interview.create.mockResolvedValue({});
+
+    const response = await request(app)
+      .post("/api/evaluation/evaluate")
+      .set("Authorization", `Bearer ${token()}`)
+      .send({
+        role: "Frontend Developer",
+        questions: ["Explain React state management and when you would use it."],
+        answers: ["I don't know."],
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.body.overall).toBeLessThanOrEqual(25);
+    expect(response.body.technical).toBeLessThanOrEqual(25);
+    expect(Interview.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        score: expect.any(Number),
+        feedback: expect.objectContaining({
+          overall: expect.any(Number),
+        }),
+      })
+    );
+  });
+
   test("returns current user's history", async () => {
     const select = jest.fn().mockResolvedValue([
       { _id: "interview-1", role: "Frontend Developer", score: 80 },
@@ -369,6 +406,27 @@ describe("protected interview APIs", () => {
 
     const response = await request(app)
       .delete(`/api/history/${interviewId}`)
+      .set("Authorization", `Bearer ${token()}`);
+
+    expect(response.status).toBe(200);
+    expect(Interview.findOneAndUpdate).toHaveBeenCalledWith(
+      { _id: interviewId, user: "user-1", deletedAt: null },
+      { deletedAt: expect.any(Date) },
+      { new: true }
+    );
+  });
+
+  test("soft deletes an interview through the plural interviews API", async () => {
+    const interviewId = "507f1f77bcf86cd799439011";
+    const select = jest.fn().mockResolvedValue({
+      _id: interviewId,
+      role: "Frontend Developer",
+      deletedAt: new Date(),
+    });
+    Interview.findOneAndUpdate.mockReturnValue({ select });
+
+    const response = await request(app)
+      .delete(`/api/interviews/${interviewId}`)
       .set("Authorization", `Bearer ${token()}`);
 
     expect(response.status).toBe(200);

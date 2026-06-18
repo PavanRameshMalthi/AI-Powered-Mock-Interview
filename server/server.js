@@ -106,6 +106,7 @@ app.use(
 app.use("/api/auth", authRoutes);
 app.use("/api/resume", resumeRoutes);
 app.use("/api/interview", interviewRoutes);
+app.use("/api/interviews", historyRoutes);
 app.use("/api/evaluation", evaluationRoutes);
 app.use("/api/history", historyRoutes);
 app.use("/api/admin", adminRoutes);
