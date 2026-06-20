@@ -32,6 +32,7 @@ test("logs in and stores auth state", async () => {
   expect(authService.login).toHaveBeenCalledWith({
     email: "test@example.com",
     password: "Password123!",
+    rememberMe: true,
   });
   expect(localStorage.getItem("token")).toBe("token-123");
 });

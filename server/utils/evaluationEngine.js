@@ -261,7 +261,7 @@ const generateImprovementSuggestion = (score, missingKeywords, whatWasIncorrect,
   }
   if (score >= 40) {
     const topicsToAdd = missingKeywords.slice(0, 3).join(", ");
-    return `Partial answer. You need to add more about: ${topicsToAdd}. Structure: concept → implementation → tradeoffs → impact.`;
+    return `Partial answer. You need to add more about: ${topicsToAdd}. Structure: concept -> implementation -> tradeoffs -> impact.`;
   }
   if (score > 0) {
     return `The answer does not directly address the question. Start over with: "${metadata.question}". Review: ${missingKeywords.join(", ") || "core concepts"}.`;

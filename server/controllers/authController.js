@@ -83,21 +83,26 @@ const findUserByEmailWithSecrets = async (email) => {
   return query;
 };
 
-const setRefreshCookie = (res, refreshToken) => {
-  res.cookie("refreshToken", refreshToken, {
+const setRefreshCookie = (res, refreshToken, rememberMe = true) => {
+  const options = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    maxAge: REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000,
-  });
+  };
+
+  if (rememberMe) {
+    options.maxAge = REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000;
+  }
+
+  res.cookie("refreshToken", refreshToken, options);
 };
 
-const issueSession = async (user, res) => {
+const issueSession = async (user, res, options = {}) => {
   const token = createAccessToken(user);
   const refreshToken = createRefreshToken();
   user.refreshTokenHash = hashToken(refreshToken);
   await user.save?.();
-  setRefreshCookie(res, refreshToken);
+  setRefreshCookie(res, refreshToken, options.rememberMe !== false);
   return { token, user: sanitizeUser(user) };
 };
 
@@ -177,10 +182,14 @@ const registerUser = asyncHandler(async (req, res) => {
     emailVerificationExpires: new Date(Date.now() + 24 * 60 * 60 * 1000),
   });
 
+  const session = await issueSession(user, res, {
+    rememberMe: req.body.rememberMe !== false,
+  });
+
   const payload = {
     success: true,
     message: "User registered successfully",
-    user: sanitizeUser(user),
+    ...session,
   };
 
   if (process.env.NODE_ENV !== "production") {
@@ -203,7 +212,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    ...(await issueSession(user, res)),
+    ...(await issueSession(user, res, { rememberMe: req.body.rememberMe !== false })),
   });
 });
 
@@ -224,7 +233,7 @@ const refreshSession = asyncHandler(async (req, res) => {
 
   res.json({
     success: true,
-    ...(await issueSession(user, res)),
+    ...(await issueSession(user, res, { rememberMe: req.body.rememberMe !== false })),
   });
 });
 

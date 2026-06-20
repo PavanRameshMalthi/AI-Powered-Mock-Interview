@@ -13,6 +13,18 @@ const clampScore = (value) => {
   return Math.min(Math.max(Math.round(score), 0), 100);
 };
 
+const uniqueStrings = (items) => [...new Set(items.filter(Boolean).map(String))];
+
+const isClearlyWrongQuestion = (item) =>
+  item.isEmpty ||
+  item.isIrrelevant ||
+  item.score < 40 ||
+  (item.correctnessScore < 25 && item.relevanceScore < 25);
+
+const isClearlyWrongEvaluation = (evaluation) =>
+  evaluation.overall < 40 ||
+  evaluation.questionScores?.some((item) => isClearlyWrongQuestion(item));
+
 const parseEvaluation = (responseText) => {
   try {
     const cleaned = responseText
@@ -73,8 +85,8 @@ const mergeEvaluations = (geminiEvaluation, localEvaluation) => {
 
   // Safety check: if local evaluation clearly identifies a wrong answer (< 40),
   // don't let Gemini override with a high score
-  const isClearlyWrong = localEvaluation.overall < 40;
-  const weightGemini = isClearlyWrong ? 0.2 : 0.6;
+  const isClearlyWrong = isClearlyWrongEvaluation(localEvaluation);
+  const weightGemini = isClearlyWrong ? 0 : 0.6;
   const weightLocal = 1 - weightGemini;
 
   // Merge overall scores
@@ -84,18 +96,27 @@ const mergeEvaluations = (geminiEvaluation, localEvaluation) => {
     communication: clampScore(geminiEvaluation.communication * weightGemini + localEvaluation.communication * weightLocal),
     problemSolving: clampScore(geminiEvaluation.problemSolving * weightGemini + localEvaluation.problemSolving * weightLocal),
     overall: clampScore(geminiEvaluation.overall * weightGemini + localEvaluation.overall * weightLocal),
-    feedback: geminiEvaluation.feedback || localEvaluation.feedback,
+    feedback: isClearlyWrong
+      ? localEvaluation.feedback
+      : geminiEvaluation.feedback || localEvaluation.feedback,
   };
+
+  if (isClearlyWrong) {
+    merged.technical = Math.min(merged.technical, localEvaluation.technical);
+    merged.communication = Math.min(merged.communication, localEvaluation.communication);
+    merged.problemSolving = Math.min(merged.problemSolving, localEvaluation.problemSolving);
+    merged.overall = Math.min(merged.overall, localEvaluation.overall, 35);
+  }
 
   // Merge questionScores if present and matching in length
   if (Array.isArray(geminiEvaluation.questionScores) && geminiEvaluation.questionScores.length === localEvaluation.questionScores.length) {
     merged.questionScores = localEvaluation.questionScores.map((localQ, idx) => {
       const geminiQ = geminiEvaluation.questionScores[idx];
-      const qIsClearlyWrong = localQ.score < 40;
-      const qWeightGemini = qIsClearlyWrong ? 0.2 : 0.6;
+      const qIsClearlyWrong = isClearlyWrongQuestion(localQ);
+      const qWeightGemini = qIsClearlyWrong ? 0 : 0.6;
       const qWeightLocal = 1 - qWeightGemini;
 
-      return {
+      const mergedQuestion = {
         ...localQ,
         score: clampScore(geminiQ.score * qWeightGemini + localQ.score * qWeightLocal),
         correctnessScore: clampScore(geminiQ.correctnessScore * qWeightGemini + localQ.correctnessScore * qWeightLocal),
@@ -107,13 +128,25 @@ const mergeEvaluations = (geminiEvaluation, localEvaluation) => {
         feedback: geminiQ.feedback || localQ.feedback,
         improvementSuggestion: geminiQ.improvementSuggestion || localQ.improvementSuggestion,
       };
+
+      if (qIsClearlyWrong) {
+        mergedQuestion.score = Math.min(mergedQuestion.score, localQ.score, 35);
+        mergedQuestion.correctnessScore = Math.min(mergedQuestion.correctnessScore, localQ.correctnessScore);
+        mergedQuestion.relevanceScore = Math.min(mergedQuestion.relevanceScore, localQ.relevanceScore);
+        mergedQuestion.technicalAccuracyScore = Math.min(
+          mergedQuestion.technicalAccuracyScore,
+          localQ.technicalAccuracyScore
+        );
+        mergedQuestion.feedback = localQ.feedback;
+        mergedQuestion.improvementSuggestion = localQ.improvementSuggestion;
+      }
+
+      return mergedQuestion;
     });
   }
 
   return merged;
 };
-
-const uniqueStrings = (items) => [...new Set(items.filter(Boolean).map(String))];
 
 const enrichEvaluation = (evaluation) => {
   const questionScores = evaluation.questionScores || [];
@@ -176,7 +209,9 @@ const evaluateInterview = asyncHandler(async (req, res) => {
     const role = String(req.body.role || "").trim();
     const difficulty = String(req.body.difficulty || "Beginner").trim();
     const questions = Array.isArray(req.body.questions)
-      ? req.body.questions.map(String)
+      ? req.body.questions.map((question) =>
+          question && typeof question === "object" ? question : String(question || "")
+        )
       : [];
     const answers = Array.isArray(req.body.answers)
       ? req.body.answers.map(String)
@@ -186,6 +221,12 @@ const evaluateInterview = asyncHandler(async (req, res) => {
     if (!role || !questions.length || !answers.length) {
       throw new AppError("Role, questions, and answers are required", 400);
     }
+
+    const questionText = questions.map((question) =>
+      question && typeof question === "object"
+        ? String(question.question || "").trim()
+        : String(question || "").trim()
+    );
 
     const localEvaluation = evaluateAnswers({
       role,
@@ -285,7 +326,7 @@ Return ONLY a JSON object in this format:
       user: req.user.id,
       role,
       difficulty,
-      questions,
+      questions: questionText,
       answers,
       score: evaluation.overall,
       feedback: evaluation,

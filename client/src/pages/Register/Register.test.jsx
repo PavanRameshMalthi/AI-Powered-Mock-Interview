@@ -13,6 +13,12 @@ jest.mock("../../components/UI/Toast", () => ({
   showError: jest.fn(),
 }));
 
+beforeEach(() => {
+  localStorage.clear();
+  sessionStorage.clear();
+  jest.clearAllMocks();
+});
+
 test("disables registration until password rules pass", async () => {
   render(
     <MemoryRouter>
@@ -29,8 +35,12 @@ test("disables registration until password rules pass", async () => {
   expect(authService.register).not.toHaveBeenCalled();
 });
 
-test("submits valid registration", async () => {
-  authService.register.mockResolvedValue({ success: true });
+test("submits valid registration and stores returned session", async () => {
+  authService.register.mockResolvedValue({
+    success: true,
+    token: "token-123",
+    user: { name: "Test User", email: "test@example.com" },
+  });
 
   render(
     <MemoryRouter>
@@ -48,5 +58,7 @@ test("submits valid registration", async () => {
     name: "Test User",
     email: "test@example.com",
     password: "Password123!",
+    rememberMe: true,
   });
+  expect(localStorage.getItem("token")).toBe("token-123");
 });

@@ -30,8 +30,10 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshResponse = await api.post("/auth/refresh");
         const storage = localStorage.getItem("user") ? localStorage : sessionStorage;
+        const refreshResponse = await api.post("/auth/refresh", {
+          rememberMe: storage === localStorage,
+        });
         storage.setItem("token", refreshResponse.data.token);
         storage.setItem("user", JSON.stringify(refreshResponse.data.user));
         originalRequest.headers = originalRequest.headers || {};

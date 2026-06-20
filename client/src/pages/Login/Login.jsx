@@ -77,6 +77,7 @@ const Login = () => {
       const credentials = {
         email: formData.email,
         password: formData.password,
+        rememberMe: formData.rememberMe,
       };
       const response = await authService.login(credentials);
       storeSession(response);

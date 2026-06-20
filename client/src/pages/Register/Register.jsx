@@ -64,11 +64,19 @@ const Register = () => {
     setLoading(true);
 
     try {
-      await authService.register({
+      const response = await authService.register({
         name: formData.name,
         email: formData.email,
         password: formData.password,
+        rememberMe: true,
       });
+      if (response.token) {
+        storeSession(response);
+        showSuccess("Account created");
+        navigate("/dashboard");
+        return;
+      }
+
       showSuccess("Account created. Please sign in.");
       navigate("/login");
     } catch (error) {

@@ -18,8 +18,8 @@ const register = async (data) => {
   return response.data;
 };
 
-const refreshSession = async () => {
-  const response = await api.post("/auth/refresh");
+const refreshSession = async (data = {}) => {
+  const response = await api.post("/auth/refresh", data);
   return response.data;
 };
 

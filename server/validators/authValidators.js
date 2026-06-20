@@ -18,11 +18,13 @@ const registerRules = [
   body("name").trim().isLength({ min: 2, max: 80 }).withMessage("Name must be 2-80 characters"),
   body("email").trim().isEmail().withMessage("Enter a valid email address").normalizeEmail(),
   strongPassword(),
+  body("rememberMe").optional().isBoolean().withMessage("rememberMe must be true or false"),
 ];
 
 const loginRules = [
   body("email").trim().isEmail().withMessage("Enter a valid email address").normalizeEmail(),
   body("password").isString().notEmpty().withMessage("Password is required"),
+  body("rememberMe").optional().isBoolean().withMessage("rememberMe must be true or false"),
 ];
 
 const changePasswordRules = [

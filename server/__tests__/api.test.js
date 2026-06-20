@@ -72,13 +72,14 @@ describe("auth API", () => {
     expect(response.body.message).toBe("Validation failed");
   });
 
-  test("registers a user without returning the password", async () => {
+  test("registers a user, issues a JWT session, and does not return the password", async () => {
     User.findOne.mockResolvedValue(null);
     User.create.mockResolvedValue({
       _id: "user-1",
       name: "Test User",
       email: "test@example.com",
       role: "student",
+      save: jest.fn(),
     });
 
     const response = await request(app).post("/api/auth/register").send({
@@ -88,6 +89,7 @@ describe("auth API", () => {
     });
 
     expect(response.status).toBe(201);
+    expect(response.body.token).toEqual(expect.any(String));
     expect(response.body.user.password).toBeUndefined();
     expect(User.create).toHaveBeenCalledWith(
       expect.objectContaining({ email: "test@example.com" })
@@ -152,12 +154,14 @@ describe("auth API", () => {
 
   test("logs in a valid user", async () => {
     const hashedPassword = await bcrypt.hash("Password123!", 4);
+    const save = jest.fn();
     User.findOne.mockResolvedValue({
       _id: "user-1",
       name: "Test User",
       email: "test@example.com",
       password: hashedPassword,
       role: "student",
+      save,
     });
 
     const response = await request(app).post("/api/auth/login").send({
@@ -168,6 +172,61 @@ describe("auth API", () => {
     expect(response.status).toBe(200);
     expect(response.body.token).toEqual(expect.any(String));
     expect(response.body.user.password).toBeUndefined();
+    expect(response.header["set-cookie"][0]).toContain("refreshToken=");
+    expect(save).toHaveBeenCalled();
+  });
+
+  test("creates a session refresh cookie when rememberMe is false", async () => {
+    const hashedPassword = await bcrypt.hash("Password123!", 4);
+    User.findOne.mockResolvedValue({
+      _id: "user-1",
+      name: "Test User",
+      email: "test@example.com",
+      password: hashedPassword,
+      role: "student",
+      save: jest.fn(),
+    });
+
+    const response = await request(app).post("/api/auth/login").send({
+      email: "test@example.com",
+      password: "Password123!",
+      rememberMe: false,
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.header["set-cookie"][0]).toContain("refreshToken=");
+    expect(response.header["set-cookie"][0]).not.toMatch(/Max-Age|Expires/i);
+  });
+
+  test("refreshes a valid refresh-token session", async () => {
+    const save = jest.fn();
+    const crypto = require("crypto");
+    const refreshToken = "refresh-token";
+    const refreshTokenHash = crypto
+      .createHash("sha256")
+      .update(refreshToken)
+      .digest("hex");
+
+    User.findOne.mockReturnValue({
+      select: jest.fn().mockResolvedValue({
+        _id: "user-1",
+        name: "Test User",
+        email: "test@example.com",
+        role: "student",
+        refreshTokenHash,
+        save,
+      }),
+    });
+
+    const response = await request(app)
+      .post("/api/auth/refresh")
+      .set("Cookie", [`refreshToken=${refreshToken}`])
+      .send({ rememberMe: false });
+
+    expect(response.status).toBe(200);
+    expect(response.body.token).toEqual(expect.any(String));
+    expect(response.body.user.email).toBe("test@example.com");
+    expect(response.header["set-cookie"][0]).not.toMatch(/Max-Age|Expires/i);
   });
 
   test("verifies an email token", async () => {
@@ -374,6 +433,65 @@ describe("protected interview APIs", () => {
         }),
       })
     );
+  });
+
+  test("returns high detailed scores for a correct answer", async () => {
+    model.generateContent.mockRejectedValue(new Error("provider down"));
+    Interview.create.mockResolvedValue({});
+
+    const response = await request(app)
+      .post("/api/evaluation/evaluate")
+      .set("Authorization", `Bearer ${token()}`)
+      .send({
+        role: "Frontend Developer",
+        questions: [
+          {
+            question: "Explain React component architecture for a large application.",
+            expectedAnswer:
+              "A strong answer explains React components, state management, performance, testing, and scalability with examples.",
+            keywords: ["react", "components", "state", "performance", "testing", "scalability"],
+          },
+        ],
+        answers: [
+          "I would use modular React components with clear responsibilities, hooks and context for state, memoization and code splitting for performance, Testing Library for testing, and scalable folders with error boundaries. For example, I optimized a dashboard and reduced render work.",
+        ],
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.body.overall).toBeGreaterThanOrEqual(75);
+    expect(response.body.questionScores[0]).toEqual(
+      expect.objectContaining({
+        correctnessScore: expect.any(Number),
+        relevanceScore: expect.any(Number),
+        technicalAccuracyScore: expect.any(Number),
+        communicationScore: expect.any(Number),
+        whatWasCorrect: expect.any(Array),
+        whatWasIncorrect: expect.any(Array),
+        correctAnswer: expect.any(String),
+        improvementSuggestion: expect.any(String),
+      })
+    );
+  });
+
+  test.each([
+    ["empty", ""],
+    ["random", "asdf qwerty lorem ipsum as an AI"],
+  ])("returns low detailed scores for a %s answer", async (_label, answer) => {
+    model.generateContent.mockRejectedValue(new Error("provider down"));
+    Interview.create.mockResolvedValue({});
+
+    const response = await request(app)
+      .post("/api/evaluation/evaluate")
+      .set("Authorization", `Bearer ${token()}`)
+      .send({
+        role: "Frontend Developer",
+        questions: ["Explain React state management."],
+        answers: [answer],
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.body.overall).toBeLessThanOrEqual(25);
+    expect(response.body.questionScores[0].score).toBeLessThanOrEqual(25);
   });
 
   test("returns current user's history", async () => {
