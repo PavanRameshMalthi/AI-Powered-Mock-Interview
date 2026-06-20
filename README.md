@@ -73,13 +73,6 @@ AI Mock Interview/
     server.js
     package.json
   postman/
-  dashboard-report.md
-  analytics-report.md
-  feedback-system-report.md
-  security-report.md
-  performance-report.md
-  test-report.md
-  uiux-report.md
   README.md
 ```
 
