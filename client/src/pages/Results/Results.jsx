@@ -15,8 +15,12 @@ const Results = () => {
         localStorage.getItem("interviewConfig") || "{}"
       );
       const resumeText = localStorage.getItem("resumeText") || "";
+      const completeAnswers =
+        questions.length > 0 &&
+        answers.length === questions.length &&
+        questions.every((_, index) => String(answers[index] || "").trim().length > 0);
 
-      if (!questions.length || !answers.length || !config.role) {
+      if (!config.role || !completeAnswers) {
         setError("Complete an interview before viewing results.");
         return;
       }

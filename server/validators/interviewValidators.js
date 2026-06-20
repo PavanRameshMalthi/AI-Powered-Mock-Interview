@@ -29,7 +29,19 @@ const evaluationRules = [
   body("role").trim().isLength({ min: 2, max: 80 }).withMessage("Role is required"),
   body("difficulty").optional().isIn(difficulties).withMessage("Choose a valid difficulty"),
   body("questions").isArray({ min: 1, max: 10 }).withMessage("Questions are required"),
-  body("answers").isArray({ min: 1, max: 10 }).withMessage("Answers are required"),
+  body("answers")
+    .isArray({ min: 1, max: 10 })
+    .withMessage("Answers are required")
+    .custom((answers, { req }) => {
+      const questions = Array.isArray(req.body.questions) ? req.body.questions : [];
+      if (answers.length !== questions.length) {
+        throw new Error("Every question must have an answer");
+      }
+      if (answers.some((answer) => String(answer || "").trim().length === 0)) {
+        throw new Error("Every question must have an answer");
+      }
+      return true;
+    }),
   body("resumeText").optional().isString().isLength({ max: 20000 }).withMessage("Resume text is too long"),
 ];
 

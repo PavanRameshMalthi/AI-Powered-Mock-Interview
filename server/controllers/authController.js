@@ -44,6 +44,14 @@ const createOtp = () => String(crypto.randomInt(100000, 1000000));
 const getClientUrl = () =>
   (process.env.CLIENT_URL || process.env.FRONTEND_URL || "http://localhost:5173").split(",")[0];
 
+const getServerUrl = (req) =>
+  (process.env.SERVER_URL || `${req.protocol}://${req.get("host")}`).replace(/\/$/, "");
+
+const getOAuthRedirectUri = (provider, req) => {
+  const envKey = provider === "google" ? "GOOGLE_REDIRECT_URI" : "LINKEDIN_REDIRECT_URI";
+  return process.env[envKey] || `${getServerUrl(req)}/api/auth/${provider}/callback`;
+};
+
 const appendQuery = (url, params) => {
   const target = new URL(url);
   Object.entries(params).forEach(([key, value]) => {
@@ -352,9 +360,7 @@ const startOAuth = (provider, req, res) => {
     throw new AppError(`${provider} OAuth client ID is not configured`, 500);
   }
 
-  const redirectUri =
-    process.env[isGoogle ? "GOOGLE_REDIRECT_URI" : "LINKEDIN_REDIRECT_URI"] ||
-    `${req.protocol}://${req.get("host")}/api/auth/${provider}/callback`;
+  const redirectUri = getOAuthRedirectUri(provider, req);
   const state = createRefreshToken();
   res.cookie(`${provider}OAuthState`, state, {
     httpOnly: true,
@@ -387,9 +393,7 @@ const googleCallback = asyncHandler(async (req, res) => {
     throw new AppError("Google OAuth state is invalid", 401);
   }
 
-  const redirectUri =
-    process.env.GOOGLE_REDIRECT_URI ||
-    `${req.protocol}://${req.get("host")}/api/auth/google/callback`;
+  const redirectUri = getOAuthRedirectUri("google", req);
   const profile = await exchangeOAuthCode({
     provider: "google",
     code: req.query.code,
@@ -412,9 +416,7 @@ const linkedinCallback = asyncHandler(async (req, res) => {
     throw new AppError("LinkedIn OAuth state is invalid", 401);
   }
 
-  const redirectUri =
-    process.env.LINKEDIN_REDIRECT_URI ||
-    `${req.protocol}://${req.get("host")}/api/auth/linkedin/callback`;
+  const redirectUri = getOAuthRedirectUri("linkedin", req);
   const profile = await exchangeOAuthCode({
     provider: "linkedin",
     code: req.query.code,

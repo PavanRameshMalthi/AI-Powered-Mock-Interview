@@ -203,6 +203,8 @@ const InterviewSession = () => {
         <label>
           Your answer
           <textarea
+            aria-describedby={!hasAnswer ? "answer-required-message" : undefined}
+            aria-invalid={!hasAnswer}
             onChange={(event) => setAnswer(event.target.value)}
             placeholder="Answer with examples, tradeoffs, and outcomes..."
             rows="9"
@@ -218,7 +220,7 @@ const InterviewSession = () => {
             Previous
           </button>
           {!hasAnswer ? (
-            <p className="field-error" role="status">
+            <p className="field-error" id="answer-required-message" role="status">
               Please enter your answer before continuing.
             </p>
           ) : null}

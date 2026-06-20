@@ -7,6 +7,11 @@ jest.mock("../../services/api", () => ({
   post: jest.fn(),
 }));
 
+beforeEach(() => {
+  localStorage.clear();
+  jest.clearAllMocks();
+});
+
 test("evaluates and renders scorecard", async () => {
   localStorage.setItem("questions", JSON.stringify(["Question?"]));
   localStorage.setItem("answers", JSON.stringify(["Answer."]));
@@ -63,4 +68,25 @@ test("shows an error when interview state is missing", async () => {
   });
 
   expect(screen.getByText(/complete an interview/i)).toBeInTheDocument();
+});
+
+test("does not evaluate when any question is unanswered", async () => {
+  localStorage.setItem("questions", JSON.stringify(["Question one?", "Question two?"]));
+  localStorage.setItem("answers", JSON.stringify(["Answered.", ""]));
+  localStorage.setItem(
+    "interviewConfig",
+    JSON.stringify({ role: "Frontend Developer" })
+  );
+
+  render(
+    <MemoryRouter>
+      <Results />
+    </MemoryRouter>
+  );
+
+  await waitFor(() => {
+    expect(screen.getByRole("heading", { name: /results unavailable/i })).toBeInTheDocument();
+  });
+
+  expect(api.post).not.toHaveBeenCalled();
 });
