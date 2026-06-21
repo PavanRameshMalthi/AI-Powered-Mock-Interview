@@ -15,8 +15,6 @@ const {
   linkedinAuth,
   linkedinStart,
   linkedinCallback,
-  sendPhoneOtp,
-  phoneAuth,
 } = require("../controllers/authController");
 const authMiddleware = require("../middleware/authMiddleware");
 const validate = require("../middleware/validate");
@@ -27,8 +25,6 @@ const {
   forgotPasswordRules,
   resetPasswordRules,
   verifyEmailRules,
-  phoneOtpRules,
-  phoneLoginRules,
   providerLoginRules,
 } = require("../validators/authValidators");
 
@@ -49,7 +45,5 @@ router.get("/linkedin/start", linkedinStart);
 router.get("/linkedin/callback", linkedinCallback);
 router.post("/google", providerLoginRules, validate, googleAuth);
 router.post("/linkedin", providerLoginRules, validate, linkedinAuth);
-router.post("/phone/send-otp", phoneOtpRules, validate, sendPhoneOtp);
-router.post("/phone", phoneLoginRules, validate, phoneAuth);
 
 module.exports = router;

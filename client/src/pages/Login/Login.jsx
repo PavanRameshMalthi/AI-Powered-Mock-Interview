@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaLinkedin, FaPhoneAlt } from "react-icons/fa";
+import { FaLinkedin } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import { showError, showSuccess } from "../../components/UI/Toast";
 import PasswordField from "../../components/UI/PasswordField";
@@ -11,15 +11,11 @@ const Login = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    phone: "",
-    otp: "",
     rememberMe: true,
   });
   const [loading, setLoading] = useState(false);
   const [providerLoading, setProviderLoading] = useState("");
-  const [phoneOtpSent, setPhoneOtpSent] = useState(false);
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const phonePattern = /^\+?[1-9]\d{7,14}$/;
   const isValid = emailPattern.test(formData.email.trim()) && formData.password;
 
   useEffect(() => {
@@ -101,37 +97,6 @@ const Login = () => {
       return;
     }
 
-    if (provider === "phone") {
-      const normalizedPhone = formData.phone.trim().replace(/[^\d+]/g, "");
-
-      if (!phonePattern.test(normalizedPhone)) {
-        showError("Enter a valid phone number");
-        return;
-      }
-
-      if (!phoneOtpSent) {
-        setProviderLoading(provider);
-        try {
-          const response = await authService.sendPhoneOtp({ phone: normalizedPhone });
-          setPhoneOtpSent(true);
-          if (response.otp) {
-            setFormData((current) => ({ ...current, otp: response.otp }));
-          }
-          showSuccess("OTP sent successfully");
-        } catch (error) {
-          showError(error.response?.data?.message || "Unable to send OTP");
-        } finally {
-          setProviderLoading("");
-        }
-        return;
-      }
-
-      if (!formData.otp.trim()) {
-        showError("Enter OTP");
-        return;
-      }
-    }
-
     setProviderLoading(provider);
 
     try {
@@ -153,14 +118,6 @@ const Login = () => {
           name,
           linkedinId: `linkedin:${email || "demo"}`,
           headline: "Interview candidate",
-        });
-      }
-
-      if (provider === "phone") {
-        response = await authService.phoneLogin({
-          phone: formData.phone.trim().replace(/[^\d+]/g, ""),
-          otp: formData.otp,
-          name: "Phone Candidate",
         });
       }
 
@@ -202,31 +159,6 @@ const Login = () => {
             value={formData.password}
           />
 
-          <div className="form-row">
-            <label>
-              Phone
-              <input
-                autoComplete="tel"
-                name="phone"
-                onChange={handleChange}
-                placeholder="Enter your phone number"
-                type="tel"
-                value={formData.phone}
-              />
-            </label>
-            <label>
-              OTP
-              <input
-                inputMode="numeric"
-                name="otp"
-                onChange={handleChange}
-                placeholder="Enter OTP"
-                type="text"
-                value={formData.otp}
-              />
-            </label>
-          </div>
-
           <div className="auth-options">
             <label className="checkbox-row">
               <input
@@ -263,14 +195,6 @@ const Login = () => {
             type="button"
           >
             <FaLinkedin aria-hidden="true" /> {providerLoading === "linkedin" ? "Connecting..." : "Continue with LinkedIn"}
-          </button>
-          <button
-            className="btn btn-secondary full-width"
-            disabled={Boolean(providerLoading) || !formData.phone.trim()}
-            onClick={() => handleProviderLogin("phone")}
-            type="button"
-          >
-            <FaPhoneAlt aria-hidden="true" /> {providerLoading === "phone" ? "Working..." : phoneOtpSent ? "Verify OTP" : "Continue with Phone Number"}
           </button>
         </div>
 

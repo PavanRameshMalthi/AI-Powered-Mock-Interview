@@ -6,18 +6,15 @@ const { AppError, asyncHandler } = require("../middleware/errorMiddleware");
 
 const ACCESS_TOKEN_TTL = process.env.ACCESS_TOKEN_TTL || "15m";
 const REFRESH_TOKEN_TTL_DAYS = Number(process.env.REFRESH_TOKEN_TTL_DAYS || 7);
-const PHONE_OTP_TTL_MINUTES = Number(process.env.PHONE_OTP_TTL_MINUTES || 10);
 const PASSWORD_RESET_TTL_MINUTES = Number(process.env.PASSWORD_RESET_TTL_MINUTES || 30);
 
 const sanitizeUser = (user) => ({
   _id: user._id,
   name: user.name,
   email: user.email,
-  phone: user.phone,
   profilePicture: user.profilePicture,
   authProvider: user.authProvider,
   isEmailVerified: user.isEmailVerified,
-  isPhoneVerified: user.isPhoneVerified,
   role: user.role,
 });
 
@@ -39,7 +36,6 @@ const createAccessToken = (user) => {
 };
 
 const createRefreshToken = () => crypto.randomBytes(48).toString("hex");
-const createOtp = () => String(crypto.randomInt(100000, 1000000));
 
 const getClientUrl = () =>
   (process.env.CLIENT_URL || process.env.FRONTEND_URL || "http://localhost:5173").split(",")[0];
@@ -119,24 +115,18 @@ const upsertProviderUser = async ({
   providerId,
   email,
   name,
-  phone,
   profilePicture,
   extra = {},
 }) => {
   const normalizedEmail = String(email || "").trim().toLowerCase();
-  const normalizedPhone = String(phone || "").replace(/[^\d+]/g, "");
   const providerField = provider === "google" ? "googleId" : "linkedinId";
-  const providerValue = String(providerId || normalizedEmail || normalizedPhone).trim();
+  const providerValue = String(providerId || normalizedEmail).trim();
 
   if (!providerValue) {
     throw new AppError(`${provider} login requires a verified profile identifier`, 400);
   }
 
-  const providerQuery =
-    provider === "phone"
-      ? { phone: normalizedPhone, authProvider: "phone" }
-      : { [providerField]: providerValue };
-  let user = await User.findOne(providerQuery);
+  let user = await User.findOne({ [providerField]: providerValue });
 
   if (!user && normalizedEmail) {
     user = await User.findOne({ email: normalizedEmail });
@@ -144,26 +134,22 @@ const upsertProviderUser = async ({
 
   if (user) {
     user.name = user.name || name || "Candidate";
-    user.phone = user.phone || normalizedPhone || undefined;
     user.profilePicture = user.profilePicture || profilePicture || undefined;
     user.authProvider = user.authProvider === "local" ? "local" : provider;
-    if (provider !== "phone") user[providerField] = user[providerField] || providerValue;
+    user[providerField] = user[providerField] || providerValue;
     if (provider === "google") user.isEmailVerified = true;
-    if (provider === "phone") user.isPhoneVerified = true;
     Object.assign(user, extra);
     await user.save?.();
     return user;
   }
 
   return User.create({
-    name: name || (provider === "phone" ? `Phone user ${normalizedPhone.slice(-4)}` : "Candidate"),
-    email: normalizedEmail || `${normalizedPhone.replace(/\D/g, "")}@phone.local`,
-    phone: normalizedPhone || undefined,
+    name: name || "Candidate",
+    email: normalizedEmail,
     profilePicture,
     authProvider: provider,
-    [providerField]: provider === "phone" ? undefined : providerValue,
-    isEmailVerified: provider !== "phone",
-    isPhoneVerified: provider === "phone",
+    [providerField]: providerValue,
+    isEmailVerified: true,
     ...extra,
   });
 };
@@ -528,75 +514,6 @@ const linkedinAuth = asyncHandler(async (req, res) => {
   res.json({ success: true, ...(await issueSession(user, res)) });
 });
 
-const sendPhoneOtp = asyncHandler(async (req, res) => {
-  const phone = String(req.body.phone || "").replace(/[^\d+]/g, "");
-  const otp = process.env.NODE_ENV === "production" ? createOtp() : "123456";
-  const phoneEmail = `${phone.replace(/\D/g, "")}@phone.local`;
-  let user = await User.findOne({ phone }).select("+phoneOtpHash +phoneOtpAttempts");
-
-  if (!user) {
-    user = await User.create({
-      name: `Phone user ${phone.slice(-4)}`,
-      email: phoneEmail,
-      phone,
-      authProvider: "phone",
-      isEmailVerified: false,
-      isPhoneVerified: false,
-    });
-  }
-
-  user.phoneOtpHash = hashToken(otp);
-  user.phoneOtpExpires = new Date(Date.now() + PHONE_OTP_TTL_MINUTES * 60 * 1000);
-  user.phoneOtpAttempts = 0;
-  await user.save?.();
-
-  await deliverMessage({
-    to: phone,
-    subject: "AI Mock Interview OTP",
-    text: `Your OTP is ${otp}. It expires in ${PHONE_OTP_TTL_MINUTES} minutes.`,
-  });
-
-  res.json({
-    success: true,
-    message: "OTP sent successfully",
-    ...(process.env.NODE_ENV !== "production" ? { otp } : {}),
-  });
-});
-
-const phoneAuth = asyncHandler(async (req, res) => {
-  const phone = String(req.body.phone || "").replace(/[^\d+]/g, "");
-  const otp = String(req.body.otp || "").trim();
-  const user = await User.findOne({ phone }).select("+phoneOtpHash +phoneOtpAttempts");
-
-  if (!user?.phoneOtpHash || !user.phoneOtpExpires || user.phoneOtpExpires <= new Date()) {
-    throw new AppError("OTP is invalid or expired. Request a new OTP.", 401);
-  }
-
-  if ((user.phoneOtpAttempts || 0) >= 5) {
-    throw new AppError("Too many OTP attempts. Request a new OTP.", 429);
-  }
-
-  if (user.phoneOtpHash !== hashToken(otp)) {
-    user.phoneOtpAttempts = (user.phoneOtpAttempts || 0) + 1;
-    await user.save?.();
-    throw new AppError("Invalid OTP", 401);
-  }
-
-  user.phoneOtpHash = undefined;
-  user.phoneOtpExpires = undefined;
-  user.phoneOtpAttempts = 0;
-  user.isPhoneVerified = true;
-  await user.save?.();
-
-  const sessionUser = await upsertProviderUser({
-    provider: "phone",
-    phone,
-    name: req.body.name,
-  });
-
-  res.json({ success: true, ...(await issueSession(sessionUser, res)) });
-});
-
 module.exports = {
   registerUser,
   loginUser,
@@ -613,6 +530,4 @@ module.exports = {
   linkedinAuth,
   linkedinStart,
   linkedinCallback,
-  sendPhoneOtp,
-  phoneAuth,
 };

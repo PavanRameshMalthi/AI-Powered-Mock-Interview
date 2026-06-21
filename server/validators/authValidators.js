@@ -45,21 +45,6 @@ const verifyEmailRules = [
   body("token").isString().isLength({ min: 20 }).withMessage("Verification token is invalid"),
 ];
 
-const phoneOtpRules = [
-  body("phone")
-    .trim()
-    .matches(/^\+?[1-9]\d{7,14}$/)
-    .withMessage("Enter a valid phone number"),
-];
-
-const phoneLoginRules = [
-  ...phoneOtpRules,
-  body("otp")
-    .trim()
-    .isLength({ min: 4, max: 8 })
-    .withMessage("Enter OTP"),
-];
-
 const providerLoginRules = [
   body("email")
     .optional({ checkFalsy: true })
@@ -78,7 +63,5 @@ module.exports = {
   forgotPasswordRules,
   resetPasswordRules,
   verifyEmailRules,
-  phoneOtpRules,
-  phoneLoginRules,
   providerLoginRules,
 };
