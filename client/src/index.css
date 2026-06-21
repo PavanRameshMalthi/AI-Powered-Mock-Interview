@@ -1949,4 +1949,563 @@ textarea,
   left: 0;
 }
 
-/* End of file */
+/* ═══════════════════════════════════════════════════════════════
+   ATS PANEL – REDESIGNED INTELLIGENCE UI
+═══════════════════════════════════════════════════════════════ */
+
+/* Header */
+.ats-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.ats-score-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 100px;
+  padding: 14px 20px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(61,214,189,0.12), rgba(143,180,255,0.08));
+  border: 1px solid rgba(61,214,189,0.3);
+  text-align: center;
+}
+
+.ats-score-number {
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: var(--primary);
+  line-height: 1;
+}
+
+.ats-score-label {
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-weight: 700;
+  margin-top: 4px;
+  white-space: nowrap;
+}
+
+/* Overall bar */
+.ats-overall-bar {
+  margin-bottom: 28px;
+}
+
+.ats-bar-track {
+  height: 8px;
+  border-radius: 99px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.ats-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Score Breakdown ─────────────────────────────────────── */
+.ats-score-breakdown {
+  margin-bottom: 28px;
+  padding: 20px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+}
+
+.ats-score-breakdown h3 {
+  margin-bottom: 16px;
+  font-size: 1rem;
+  color: var(--text);
+}
+
+.ats-breakdown-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.ats-breakdown-row {
+  display: grid;
+  grid-template-columns: 160px 1fr 48px;
+  align-items: center;
+  gap: 12px;
+}
+
+.ats-breakdown-label {
+  font-size: 0.875rem;
+  color: var(--muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ats-breakdown-bar-track {
+  height: 6px;
+  border-radius: 99px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.ats-breakdown-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ats-breakdown-pct {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--primary);
+  text-align: right;
+}
+
+/* ── Strong / Weak two-column grid ──────────────────────── */
+.ats-sw-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+@media (max-width: 680px) {
+  .ats-sw-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ats-sw-col {
+  border-radius: 10px;
+  padding: 18px;
+  border: 1px solid var(--border);
+}
+
+.ats-strong-col {
+  background: rgba(16, 185, 129, 0.05);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.ats-weak-col {
+  background: rgba(251, 113, 133, 0.05);
+  border-color: rgba(251, 113, 133, 0.2);
+}
+
+.ats-sw-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.ats-sw-heading h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.ats-sw-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.ats-strong-icon {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.ats-weak-icon {
+  background: rgba(251, 113, 133, 0.15);
+  color: #fb7185;
+}
+
+/* Area list items */
+.ats-area-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.ats-area-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.ats-strong-item {
+  background: rgba(16, 185, 129, 0.08);
+  color: #10b981;
+}
+
+.ats-weak-item {
+  background: rgba(251, 113, 133, 0.08);
+  color: #fb7185;
+}
+
+.ats-area-check {
+  font-size: 0.8rem;
+  font-weight: 900;
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: #10b981;
+}
+
+.ats-area-warn {
+  font-size: 0.8rem;
+  font-weight: 900;
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: #fb7185;
+}
+
+.ats-empty-note {
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+/* ── Skill Gap Analysis ──────────────────────────────────── */
+.ats-gap-section {
+  margin-bottom: 28px;
+  padding: 20px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+}
+
+.ats-gap-section h3 {
+  margin-bottom: 16px;
+  font-size: 1rem;
+}
+
+.ats-gap-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 600px) {
+  .ats-gap-grid {
+    grid-template-columns: 1fr;
+  }
+  .ats-breakdown-row {
+    grid-template-columns: 1fr;
+  }
+  .ats-breakdown-pct {
+    text-align: left;
+  }
+}
+
+.ats-gap-col-title {
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.ats-gap-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.ats-gap-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.ats-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ats-dot-green {
+  background: #10b981;
+}
+
+.ats-dot-amber {
+  background: #f59e0b;
+}
+
+/* ── Keywords section ────────────────────────────────────── */
+.ats-keyword-section {
+  margin-bottom: 24px;
+  padding: 18px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+}
+
+/* ── Recommendations section ─────────────────────────────── */
+.ats-recommendations {
+  padding: 18px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+}
+
+.ats-recommendations h3 {
+  margin-bottom: 12px;
+  font-size: 1rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DASHBOARD – REDESIGNED SKILL INTELLIGENCE UI
+═══════════════════════════════════════════════════════════════ */
+
+/* Header action row */
+.dash-header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Stat card internal layout */
+.stat-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.stat-icon {
+  font-size: 1.15rem;
+  opacity: 0.8;
+}
+
+.stat-icon-green { color: #10b981; }
+.stat-icon-blue  { color: #38bdf8; }
+.stat-icon-amber { color: #fbbf24; }
+.stat-icon-rose  { color: #fb7185; }
+
+/* ── Strong / Weak two-column grid ──────────────────────── */
+.dash-sw-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 20px 0;
+}
+
+@media (max-width: 680px) {
+  .dash-sw-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dash-sw-col {
+  /* inherits .panel styles */
+}
+
+.dash-strong-col {
+  background: rgba(16, 185, 129, 0.04);
+  border-color: rgba(16, 185, 129, 0.18);
+}
+
+.dash-weak-col {
+  background: rgba(251, 113, 133, 0.04);
+  border-color: rgba(251, 113, 133, 0.18);
+}
+
+.dash-sw-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.dash-sw-heading h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.dash-sw-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.dash-icon-green { color: #10b981; }
+.dash-icon-rose  { color: #fb7185; }
+.dash-icon-blue  { color: #38bdf8; }
+.dash-icon-amber { color: #fbbf24; }
+
+/* Area list rows */
+.dash-area-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.dash-area-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 8px;
+  line-height: 1.4;
+}
+
+.dash-strong-item {
+  background: rgba(16, 185, 129, 0.08);
+  color: #10b981;
+}
+
+.dash-weak-item {
+  background: rgba(251, 113, 133, 0.08);
+  color: #fb7185;
+}
+
+.dash-area-check {
+  font-weight: 900;
+  flex-shrink: 0;
+  font-size: 0.8rem;
+}
+
+.dash-area-warn {
+  font-weight: 900;
+  flex-shrink: 0;
+  font-size: 0.8rem;
+}
+
+/* ── Skill Scores + Recommendations row ─────────────────── */
+.dash-insights-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 680px) {
+  .dash-insights-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dash-skill-scores,
+.dash-recommendations {
+  /* inherits .panel */
+}
+
+/* Skill score rows */
+.dash-score-list {
+  display: grid;
+  gap: 12px;
+}
+
+.dash-score-row {
+  display: grid;
+  grid-template-columns: 130px 1fr 44px;
+  align-items: center;
+  gap: 12px;
+}
+
+.dash-score-label {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dash-score-bar-track {
+  height: 6px;
+  border-radius: 99px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.dash-score-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dash-score-pct {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--primary);
+  text-align: right;
+}
+
+/* Recommendation list */
+.dash-rec-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.dash-rec-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+.dash-rec-bullet {
+  color: var(--primary);
+  font-weight: 900;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Recent section + view-all link */
+.dash-recent-section {
+  margin: 20px 0;
+}
+
+.dash-view-all-link {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.dash-view-all-link:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+  .dash-score-row {
+    grid-template-columns: 1fr;
+  }
+  .dash-score-pct {
+    text-align: left;
+  }
+}

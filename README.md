@@ -41,16 +41,27 @@ Every answer is parsed across four key metrics:
 4. **Communication (20%)**: Checks answer length, paragraph structure, and example utilization.
 
 ### 📊 Dashboard & Analytics
-* **Summary Stats**: View total interviews taken, aggregate scores, and growth trendlines.
-* **Growth Charts**: Visual canvas elements mapping score improvement trends over time.
+* **Summary Stats**: View total interviews taken, aggregate scores, best score, and interview streak.
+* **Strong Areas**: Automatically identifies skills you're proficient in by combining ATS resume analysis with interview performance. Displayed as green success cards.
+* **Weak Areas**: Identifies skill gaps — missing resume keywords and low-scoring interview topics. Displayed as warning cards.
+* **Skill Scores**: Visualises your average performance across Technical, Communication, Problem Solving, and Confidence dimensions with animated progress bars.
+* **Improvement Recommendations**: Generates actionable study suggestions derived from your weakest skill areas.
+* **Dynamic Updates**: Recalculated after every completed interview so the dashboard evolves with your progress.
+* **Growth Charts**: Visual canvas elements mapping score improvement trends — line, bar (weekly), and monthly views.
 * **Interview History**: Search, sort (by score or date), soft-delete, and restore completed interview scorecards.
 
-### 📄 ATS Resume Analyzer
+### 📄 ATS Resume Intelligence
 * **Resume Upload**: Upload resumes in PDF or DOCX formats.
-* **ATS Compatibility Scoring**: Compares resume text with target role keywords.
-* **Skill Gap Analysis**: Lists detected skills, missing keywords, and suggestions to optimize the CV.
+* **ATS Compatibility Score**: Overall match score with animated gradient progress bar (0–100).
+* **Score Breakdown**: Granular sub-scores for Technical Skills, Projects, Education, Certifications, and Resume Completeness.
+* **Strong Areas Analysis**: Identifies and labels actual resume strengths with human-readable skill names (e.g., "React Development", "Git & GitHub", "SQL Database Knowledge") — not raw tokens.
+* **Weak Areas Analysis**: Flags missing industry skills (e.g., "TypeScript", "Docker", "CI/CD Pipelines") derived from your role's expected skill set.
+* **Skill Gap Analysis**: Side-by-side view of detected skills (green) vs recommended skills to learn (amber).
+* **Resume + Interview Combined Analysis**: The dashboard merges ATS data with interview scoring for a holistic skill picture.
+* **Improvement Recommendations**: Actionable tips to add keywords, projects, certifications, or impact statements.
 
-### 📑 Reports & Certificates
+---
+
 * **PDF Report Generation**: Export interview results to a readable PDF document.
 * **Completion Certificates**: Generate certificate documents detailing the target role, average score, and date of completion.
 

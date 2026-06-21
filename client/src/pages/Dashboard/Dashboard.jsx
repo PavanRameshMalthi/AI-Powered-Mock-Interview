@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FaChartLine, FaFileUpload, FaHistory, FaShieldAlt, FaSignOutAlt, FaTrophy, FaCalendarCheck, FaFire, FaTimesCircle, FaCheckCircle } from "react-icons/fa";
+import {
+  FaChartLine, FaFileUpload, FaHistory, FaShieldAlt, FaSignOutAlt,
+  FaTrophy, FaCalendarCheck, FaFire, FaCheckCircle, FaTimesCircle,
+  FaLightbulb, FaArrowUp,
+} from "react-icons/fa";
 import ChartPanel from "../../components/UI/ChartPanel";
 import dashboardService from "../../services/dashboardService";
 import authService from "../../services/authService";
@@ -11,13 +15,15 @@ const Dashboard = () => {
   const user = JSON.parse(
     localStorage.getItem("user") || sessionStorage.getItem("user") || "null"
   );
-  const [summary, setSummary] = useState({
-    completed: 0,
-    averageScore: 0,
-    recent: [],
-  });
+  const [summary, setSummary] = useState({ completed: 0, averageScore: 0, recent: [] });
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Also pull last ATS score from localStorage for the resume skill widget
+  const storedAts = (() => {
+    try { return JSON.parse(localStorage.getItem("atsScore") || "null"); }
+    catch { return null; }
+  })();
 
   useEffect(() => {
     Promise.all([
@@ -33,11 +39,7 @@ const Dashboard = () => {
   }, []);
 
   const logout = async () => {
-    try {
-      await authService.logout();
-    } catch {
-      // Local session cleanup still signs the user out if the API is unavailable.
-    }
+    try { await authService.logout(); } catch { /* Local cleanup is sufficient */ }
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     sessionStorage.removeItem("token");
@@ -47,116 +49,184 @@ const Dashboard = () => {
 
   const containerVariants = {
     hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.08,
-      },
-    },
+    show: { opacity: 1, transition: { staggerChildren: 0.08 } },
   };
-
   const itemVariants = {
     hidden: { opacity: 0, y: 15 },
     show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } },
   };
 
+  // Merge strong/weak areas from analytics + stored ATS report
+  const strongAreas = (() => {
+    const fromAnalytics = (analytics?.strongSkillAreas || []).map((a) => a.name);
+    const fromAts = storedAts?.strongAreas || [];
+    const merged = [...new Set([...fromAnalytics, ...fromAts])];
+    return merged.slice(0, 8);
+  })();
+
+  const weakAreas = (() => {
+    const fromAnalytics = (analytics?.weakSkillAreas || []).map((a) => a.name);
+    const fromAts = storedAts?.weakAreas || [];
+    const merged = [...new Set([...fromAnalytics, ...fromAts])];
+    return merged.filter((a) => !strongAreas.includes(a)).slice(0, 8);
+  })();
+
+  const skillScores = analytics?.skillScores || [];
+  const recommendations = analytics?.improvementRecommendations || [];
+
   return (
-    <motion.main 
+    <motion.main
       className="app-shell"
       initial="hidden"
       animate="show"
       variants={containerVariants}
     >
+      {/* ── Header ────────────────────────────────────────────── */}
       <motion.header className="topbar" variants={itemVariants}>
         <div>
           <p className="eyebrow">Dashboard</p>
-          <h1 className="text-3xl font-extrabold tracking-tight">
-            Welcome{user?.name ? `, ${user.name}` : ""}
-          </h1>
+          <h1>Welcome{user?.name ? `, ${user.name}` : ""}</h1>
           <p className="muted">{user?.email || "Plan your next practice round."}</p>
         </div>
-        <div className="flex gap-3">
-          <Link className="btn btn-secondary" to="/profile">
-            Profile
-          </Link>
+        <div className="dash-header-actions">
+          <Link className="btn btn-secondary" to="/profile">Profile</Link>
           <button className="btn btn-ghost" onClick={logout}>
             <FaSignOutAlt aria-hidden="true" /> Logout
           </button>
         </div>
       </motion.header>
 
-      {/* Main Metrics Stats Grid */}
+      {/* ── Stats Grid ────────────────────────────────────────── */}
       <motion.section className="stats-grid" variants={itemVariants}>
         <article className="stat-card">
-          <div className="flex justify-between items-start">
+          <div className="stat-card-top">
             <span>Total Interviews</span>
-            <FaCalendarCheck className="text-emerald-400/80 text-lg" />
+            <FaCalendarCheck className="stat-icon stat-icon-green" aria-hidden="true" />
           </div>
-          <strong>{loading ? "..." : summary.completed}</strong>
+          <strong>{loading ? "…" : summary.completed}</strong>
         </article>
         <article className="stat-card">
-          <div className="flex justify-between items-start">
+          <div className="stat-card-top">
             <span>Average Score</span>
-            <FaChartLine className="text-sky-400/80 text-lg" />
+            <FaChartLine className="stat-icon stat-icon-blue" aria-hidden="true" />
           </div>
-          <strong>{loading ? "..." : `${summary.averageScore}%`}</strong>
+          <strong>{loading ? "…" : `${summary.averageScore}%`}</strong>
         </article>
         <article className="stat-card">
-          <div className="flex justify-between items-start">
+          <div className="stat-card-top">
             <span>Best Score</span>
-            <FaTrophy className="text-amber-400/80 text-lg" />
+            <FaTrophy className="stat-icon stat-icon-amber" aria-hidden="true" />
           </div>
-          <strong>{analytics?.summary?.bestScore ? `${analytics.summary.bestScore}%` : loading ? "..." : "0%"}</strong>
+          <strong>
+            {analytics?.summary?.bestScore ? `${analytics.summary.bestScore}%` : loading ? "…" : "0%"}
+          </strong>
         </article>
         <article className="stat-card">
-          <div className="flex justify-between items-start">
+          <div className="stat-card-top">
             <span>Interview Streak</span>
-            <FaFire className="text-rose-500/80 text-lg" />
+            <FaFire className="stat-icon stat-icon-rose" aria-hidden="true" />
           </div>
-          <strong>{analytics?.summary?.interviewStreak ? `${analytics.summary.interviewStreak}d` : "0d"}</strong>
+          <strong>
+            {analytics?.summary?.interviewStreak ? `${analytics.summary.interviewStreak}d` : "0d"}
+          </strong>
         </article>
       </motion.section>
 
-      {/* Strong / Weak Areas Section */}
-      <motion.section className="grid grid-cols-1 md:grid-cols-2 gap-6 my-6" variants={itemVariants}>
-        <article className="panel">
-          <div className="flex items-center gap-2 mb-4">
-            <FaCheckCircle className="text-emerald-400" />
-            <h2 className="text-lg font-bold">Strong Areas</h2>
+      {/* ── Strong & Weak Areas ───────────────────────────────── */}
+      <motion.section className="dash-sw-section" variants={itemVariants}>
+        {/* Strong Areas */}
+        <article className="panel dash-sw-col dash-strong-col">
+          <div className="dash-sw-heading">
+            <FaCheckCircle className="dash-sw-icon dash-icon-green" aria-hidden="true" />
+            <h2>Strong Areas</h2>
           </div>
-          {analytics?.strongSkillAreas?.length ? (
-            <div className="flex flex-wrap gap-2">
-              {analytics.strongSkillAreas.map((item) => (
-                <span className="px-3 py-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 text-xs font-semibold tracking-wide" key={item.name}>
-                  {item.name}
-                </span>
+          {strongAreas.length ? (
+            <ul className="dash-area-list">
+              {strongAreas.map((item, idx) => (
+                <li key={idx} className="dash-area-item dash-strong-item">
+                  <span className="dash-area-check" aria-hidden="true">✓</span>
+                  <span>{item}</span>
+                </li>
               ))}
-            </div>
+            </ul>
           ) : (
-            <p className="empty-state">Complete interviews to identify your strengths.</p>
+            <p className="empty-state">
+              {loading
+                ? "Loading your skills…"
+                : "Complete interviews to identify your strengths."}
+            </p>
           )}
         </article>
 
-        <article className="panel">
-          <div className="flex items-center gap-2 mb-4">
-            <FaTimesCircle className="text-rose-400" />
-            <h2 className="text-lg font-bold">Weak Areas</h2>
+        {/* Weak Areas */}
+        <article className="panel dash-sw-col dash-weak-col">
+          <div className="dash-sw-heading">
+            <FaTimesCircle className="dash-sw-icon dash-icon-rose" aria-hidden="true" />
+            <h2>Weak Areas</h2>
           </div>
-          {analytics?.weakSkillAreas?.length ? (
-            <div className="flex flex-wrap gap-2">
-              {analytics.weakSkillAreas.map((item) => (
-                <span className="px-3 py-1.5 rounded-lg border border-rose-500/20 bg-rose-500/5 text-rose-400 text-xs font-semibold tracking-wide" key={item.name}>
-                  {item.name}
-                </span>
+          {weakAreas.length ? (
+            <ul className="dash-area-list">
+              {weakAreas.map((item, idx) => (
+                <li key={idx} className="dash-area-item dash-weak-item">
+                  <span className="dash-area-warn" aria-hidden="true">⚠</span>
+                  <span>{item}</span>
+                </li>
               ))}
-            </div>
+            </ul>
           ) : (
-            <p className="empty-state">No critical skill gaps identified yet.</p>
+            <p className="empty-state">
+              {loading ? "Analysing your gaps…" : "No critical skill gaps identified yet."}
+            </p>
           )}
         </article>
       </motion.section>
 
-      {/* Quick Actions Grid */}
+      {/* ── Skill Scores + Recommendations ───────────────────── */}
+      <motion.section className="dash-insights-section" variants={itemVariants}>
+        {/* Skill Scores */}
+        {skillScores.length > 0 && (
+          <article className="panel dash-skill-scores">
+            <div className="dash-sw-heading">
+              <FaArrowUp className="dash-sw-icon dash-icon-blue" aria-hidden="true" />
+              <h2>Skill Scores</h2>
+            </div>
+            <div className="dash-score-list">
+              {skillScores.map(({ label, score }) => (
+                <div className="dash-score-row" key={label}>
+                  <span className="dash-score-label">{label}</span>
+                  <div className="dash-score-bar-track">
+                    <div
+                      className="dash-score-bar-fill"
+                      style={{ width: `${score}%` }}
+                    />
+                  </div>
+                  <span className="dash-score-pct">{score}%</span>
+                </div>
+              ))}
+            </div>
+          </article>
+        )}
+
+        {/* Improvement Recommendations */}
+        {recommendations.length > 0 && (
+          <article className="panel dash-recommendations">
+            <div className="dash-sw-heading">
+              <FaLightbulb className="dash-sw-icon dash-icon-amber" aria-hidden="true" />
+              <h2>Improvement Recommendations</h2>
+            </div>
+            <ul className="dash-rec-list">
+              {recommendations.map((rec, i) => (
+                <li key={i} className="dash-rec-item">
+                  <span className="dash-rec-bullet" aria-hidden="true">→</span>
+                  <span>{rec}</span>
+                </li>
+              ))}
+            </ul>
+          </article>
+        )}
+      </motion.section>
+
+      {/* ── Quick Actions ─────────────────────────────────────── */}
       <motion.section className="action-grid" variants={itemVariants}>
         <Link className="action-card" to="/resume-upload">
           <FaFileUpload aria-hidden="true" />
@@ -165,7 +235,6 @@ const Dashboard = () => {
             <p>Use resume context for sharper interview questions.</p>
           </div>
         </Link>
-
         <Link className="action-card" to="/interview-setup">
           <FaChartLine aria-hidden="true" />
           <div>
@@ -173,7 +242,6 @@ const Dashboard = () => {
             <p>Generate questions and begin a role-specific session.</p>
           </div>
         </Link>
-
         <Link className="action-card" to="/history">
           <FaHistory aria-hidden="true" />
           <div>
@@ -181,7 +249,6 @@ const Dashboard = () => {
             <p>Review recent results and track progress over time.</p>
           </div>
         </Link>
-
         {user?.role === "admin" ? (
           <Link className="action-card" to="/admin">
             <FaShieldAlt aria-hidden="true" />
@@ -193,11 +260,11 @@ const Dashboard = () => {
         ) : null}
       </motion.section>
 
-      {/* Recent Interviews */}
-      <motion.section className="panel my-6" variants={itemVariants}>
-        <div className="section-heading flex justify-between items-center mb-4">
-          <h2 className="text-lg font-bold">Recent interviews</h2>
-          <Link className="text-sm text-emerald-400 hover:text-emerald-300 font-semibold" to="/history">View all</Link>
+      {/* ── Recent Interviews ─────────────────────────────────── */}
+      <motion.section className="panel dash-recent-section" variants={itemVariants}>
+        <div className="section-heading">
+          <h2>Recent interviews</h2>
+          <Link className="dash-view-all-link" to="/history">View all</Link>
         </div>
         {summary.recent.length ? (
           <div className="list">
@@ -215,16 +282,15 @@ const Dashboard = () => {
         )}
       </motion.section>
 
-      {/* Charts Grid */}
+      {/* ── Charts ───────────────────────────────────────────── */}
       <motion.section className="analytics-grid" variants={itemVariants}>
-        {/* Score Trend (Line Chart) */}
         <article className="panel">
-          <h2 className="text-base font-bold mb-4">Score Trend</h2>
+          <h2>Score Trend</h2>
           {analytics?.trends?.interviewScores?.length ? (
             <ChartPanel
               label="Score Trend"
-              labels={analytics.trends.interviewScores.slice(-8).map((item) => item.role)}
-              values={analytics.trends.interviewScores.slice(-8).map((item) => item.score)}
+              labels={analytics.trends.interviewScores.slice(-8).map((i) => i.role)}
+              values={analytics.trends.interviewScores.slice(-8).map((i) => i.score)}
               type="line"
             />
           ) : (
@@ -232,14 +298,13 @@ const Dashboard = () => {
           )}
         </article>
 
-        {/* Weekly Progress (Bar Chart) */}
         <article className="panel">
-          <h2 className="text-base font-bold mb-4">Weekly Progress</h2>
+          <h2>Weekly Progress</h2>
           {analytics?.trends?.weeklyProgress?.length ? (
             <ChartPanel
               label="Weekly Progress"
-              labels={analytics.trends.weeklyProgress.slice(-8).map((item) => item.week)}
-              values={analytics.trends.weeklyProgress.slice(-8).map((item) => item.averageScore)}
+              labels={analytics.trends.weeklyProgress.slice(-8).map((i) => i.week)}
+              values={analytics.trends.weeklyProgress.slice(-8).map((i) => i.averageScore)}
               type="bar"
             />
           ) : (
@@ -247,14 +312,13 @@ const Dashboard = () => {
           )}
         </article>
 
-        {/* Monthly Progress (Bar Chart) */}
         <article className="panel">
-          <h2 className="text-base font-bold mb-4">Monthly Progress</h2>
+          <h2>Monthly Progress</h2>
           {analytics?.trends?.monthlyProgress?.length ? (
             <ChartPanel
               label="Monthly Progress"
-              labels={analytics.trends.monthlyProgress.slice(-6).map((item) => item.month)}
-              values={analytics.trends.monthlyProgress.slice(-6).map((item) => item.averageScore)}
+              labels={analytics.trends.monthlyProgress.slice(-6).map((i) => i.month)}
+              values={analytics.trends.monthlyProgress.slice(-6).map((i) => i.averageScore)}
               type="bar"
             />
           ) : (
@@ -262,14 +326,13 @@ const Dashboard = () => {
           )}
         </article>
 
-        {/* Skill Growth (Bar Chart) */}
         <article className="panel">
-          <h2 className="text-base font-bold mb-4">Skill Growth</h2>
+          <h2>Skill Growth</h2>
           {analytics?.skillGrowth?.length ? (
             <ChartPanel
               label="Skill Growth"
-              labels={analytics.skillGrowth.map((item) => item.skill)}
-              values={analytics.skillGrowth.map((item) => item.score)}
+              labels={analytics.skillGrowth.map((i) => i.skill)}
+              values={analytics.skillGrowth.map((i) => i.score)}
               type="bar"
             />
           ) : (

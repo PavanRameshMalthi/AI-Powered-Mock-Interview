@@ -2,6 +2,66 @@ const Interview = require("../models/Interview");
 const AtsReport = require("../models/AtsReport");
 const { asyncHandler, AppError } = require("../middleware/errorMiddleware");
 
+// ── Human-readable label map for raw ATS keyword tokens ──────────────────────
+const SKILL_LABEL_MAP = {
+  javascript:     "JavaScript Development",
+  typescript:     "TypeScript",
+  react:          "React Development",
+  angular:        "Angular",
+  vue:            "Vue.js",
+  next:           "Next.js",
+  redux:          "State Management (Redux)",
+  node:           "Node.js Backend",
+  express:        "Express.js",
+  mongodb:        "MongoDB",
+  sql:            "SQL Database Knowledge",
+  postgresql:     "PostgreSQL",
+  mysql:          "MySQL",
+  redis:          "Redis",
+  firebase:       "Firebase",
+  html:           "HTML & CSS",
+  css:            "HTML & CSS",
+  python:         "Python",
+  java:           "Java",
+  docker:         "Docker",
+  kubernetes:     "Kubernetes",
+  aws:            "AWS Cloud",
+  azure:          "Microsoft Azure",
+  gcp:            "Google Cloud Platform",
+  git:            "Git & GitHub",
+  github:         "Git & GitHub",
+  api:            "REST API Development",
+  graphql:        "GraphQL",
+  testing:        "Testing Frameworks",
+  jest:           "Testing Frameworks (Jest)",
+  ci:             "CI/CD Pipelines",
+  cd:             "CI/CD Pipelines",
+  linux:          "Linux / Unix",
+  agile:          "Agile / Scrum",
+  scrum:          "Agile / Scrum",
+  accessibility:  "Web Accessibility (a11y)",
+  responsive:     "Responsive Web Design",
+  deployment:     "Deployment & DevOps",
+  security:       "Security Best Practices",
+  authentication: "Authentication & Auth",
+  analytics:      "Data Analytics",
+  pandas:         "Pandas / Data Science",
+  machine:        "Machine Learning",
+  vite:           "Vite / Build Tools",
+  rest:           "REST API Development",
+  database:       "Database Design",
+  frontend:       "Frontend Development",
+  backend:        "Backend Development",
+  fullstack:      "Full Stack Development",
+};
+
+const toReadableLabel = (token) =>
+  SKILL_LABEL_MAP[String(token).toLowerCase()] ||
+  String(token)
+    .split(/[_\s-]+/)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const buildHistoryQuery = (req) => {
@@ -92,24 +152,56 @@ const getAnalytics = asyncHandler(async (req, res) => {
   const improvementPercentage =
     firstScore > 0 ? Math.round(((latestScore - firstScore) / firstScore) * 100) : 0;
 
-  const keywordCounts = new Map();
+  // ── Build keyword frequency maps ─────────────────────────────────────────
+  const matchedCounts = new Map();
+  const missingCounts = new Map();
+
   interviews.forEach((item) => {
-    (item.atsScore?.matchedKeywords || []).forEach((keyword) => {
-      keywordCounts.set(keyword, (keywordCounts.get(keyword) || 0) + 1);
+    (item.atsScore?.matchedKeywords || []).forEach((kw) => {
+      matchedCounts.set(kw, (matchedCounts.get(kw) || 0) + 1);
+    });
+    (item.atsScore?.missingKeywords || []).forEach((kw) => {
+      missingCounts.set(kw, (missingCounts.get(kw) || 0) + 1);
     });
   });
 
-  const strongSkillAreas = [...keywordCounts.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 6)
-    .map(([name, count]) => ({ name, count }));
+  atsReports.forEach((report) => {
+    (report.missingKeywords || []).forEach((kw) => {
+      missingCounts.set(kw, (missingCounts.get(kw) || 0) + 1);
+    });
+  });
 
-  const weakSkillAreas = atsReports
-    .flatMap((report) => report.missingKeywords || [])
-    .reduce((map, keyword) => {
-      map.set(keyword, (map.get(keyword) || 0) + 1);
-      return map;
-    }, new Map());
+  // ── Strong areas: de-duplicate by readable label ──────────────────────────
+  const seenStrong = new Set();
+  const strongSkillAreas = [...matchedCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .reduce((acc, [token, count]) => {
+      const label = toReadableLabel(token);
+      if (!seenStrong.has(label)) {
+        seenStrong.add(label);
+        acc.push({ name: label, count });
+      }
+      return acc;
+    }, [])
+    .slice(0, 8);
+
+  // ── Weak areas: de-duplicate by readable label ────────────────────────────
+  // Also exclude tokens already covered by strong areas
+  const seenWeak = new Set(seenStrong);
+  const weakSkillAreas = [...missingCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .reduce((acc, [token, count]) => {
+      const label = toReadableLabel(token);
+      if (!seenWeak.has(label)) {
+        seenWeak.add(label);
+        acc.push({ name: label, count });
+      }
+      return acc;
+    }, [])
+    .slice(0, 8);
+
+  // keep keywordCounts alias for skillGrowth below
+  const keywordCounts = matchedCounts;
 
   const monthlyMap = interviews.reduce((map, item) => {
     const key = new Date(item.createdAt).toISOString().slice(0, 7);
@@ -159,14 +251,14 @@ const getAnalytics = asyncHandler(async (req, res) => {
   }
 
   const skillGrowth = [
-    ["React", "react"],
-    ["JavaScript", "javascript"],
-    ["Node.js", "node"],
-    ["Express.js", "express"],
-    ["MongoDB", "mongodb"],
-    ["Communication", "communication"],
-    ["Problem Solving", "problemSolving"],
-    ["Confidence", "confidence"],
+    ["React",          "react"],
+    ["JavaScript",     "javascript"],
+    ["Node.js",        "node"],
+    ["Express.js",     "express"],
+    ["MongoDB",        "mongodb"],
+    ["Communication",  "communication"],
+    ["Problem Solving","problemSolving"],
+    ["Confidence",     "confidence"],
   ].map(([label, key]) => {
     const feedbackAverage = interviews.length
       ? Math.round(
@@ -174,7 +266,7 @@ const getAnalytics = asyncHandler(async (req, res) => {
             if (key === "communication") return sum + (item.feedback?.communication || 0);
             if (key === "problemSolving") return sum + (item.feedback?.problemSolving || 0);
             if (key === "confidence") return sum + (item.feedback?.confidence || 0);
-            return sum + Math.min((item.atsScore?.matchedKeywords || []).includes(key) ? 100 : 0, 100);
+            return sum + ((item.atsScore?.matchedKeywords || []).includes(key) ? 100 : 0);
           }, 0) / interviews.length
         )
       : 0;
@@ -184,6 +276,36 @@ const getAnalytics = asyncHandler(async (req, res) => {
       score: feedbackAverage || Math.min((keywordCounts.get(key) || 0) * 20, 100),
     };
   });
+
+  // ── Skill scores for dashboard panel ─────────────────────────────────────
+  const skillScores = [
+    { label: "Technical",    key: "technical" },
+    { label: "Communication",key: "communication" },
+    { label: "Problem Solving", key: "problemSolving" },
+    { label: "Confidence",   key: "confidence" },
+  ].map(({ label, key }) => {
+    const avg = interviews.length
+      ? Math.round(
+          interviews.reduce((sum, item) => sum + (item[key] || item.score || 0), 0) /
+          interviews.length
+        )
+      : 0;
+    return { label, score: avg };
+  });
+
+  // ── Improvement recommendations derived from weak areas ──────────────────
+  const improvementRecommendations = weakSkillAreas.slice(0, 4).map((area) => {
+    const templates = [
+      `Add ${area.name} to your resume and practice related questions.`,
+      `Study ${area.name} — it appears frequently in the target role requirements.`,
+      `Build a small project demonstrating ${area.name} to fill this gap.`,
+      `Take an online course on ${area.name} to strengthen your profile.`,
+    ];
+    return templates[Math.floor(Math.random() * templates.length)];
+  });
+  if (!improvementRecommendations.length) {
+    improvementRecommendations.push("Great progress! Keep practising interviews and add quantified results to your resume.");
+  }
 
   res.json({
     success: true,
@@ -227,11 +349,10 @@ const getAnalytics = asyncHandler(async (req, res) => {
       })),
     },
     skillGrowth,
+    skillScores,
     strongSkillAreas,
-    weakSkillAreas: [...weakSkillAreas.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 6)
-      .map(([name, count]) => ({ name, count })),
+    weakSkillAreas,
+    improvementRecommendations,
   });
 });
 
