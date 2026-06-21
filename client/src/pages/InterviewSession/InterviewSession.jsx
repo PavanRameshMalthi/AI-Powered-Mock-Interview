@@ -52,12 +52,24 @@ const InterviewSession = () => {
   );
 
   const nextQuestion = () => {
-    if (!answer.trim()) {
-      showError("Please enter your answer before continuing.");
+    const updatedAnswers = saveCurrentAnswer();
+
+    if (currentQuestion < questions.length - 1) {
+      const nextIndex = currentQuestion + 1;
+      setCurrentQuestion(nextIndex);
+      setAnswer(updatedAnswers[nextIndex] || "");
       return;
     }
 
-    const updatedAnswers = saveCurrentAnswer();
+    navigate("/results");
+  };
+
+  const handleSkipQuestion = () => {
+    setAnswer("");
+    const updatedAnswers = [...answers];
+    updatedAnswers[currentQuestion] = "";
+    setAnswers(updatedAnswers);
+    localStorage.setItem("answers", JSON.stringify(updatedAnswers));
 
     if (currentQuestion < questions.length - 1) {
       const nextIndex = currentQuestion + 1;
@@ -216,15 +228,20 @@ const InterviewSession = () => {
             className="btn btn-secondary"
             disabled={currentQuestion === 0}
             onClick={previousQuestion}
+            type="button"
           >
             Previous
           </button>
           {!hasAnswer ? (
-            <p className="field-error" id="answer-required-message" role="status">
-              Please enter your answer before continuing.
-            </p>
+            <button
+              className="btn btn-secondary"
+              onClick={handleSkipQuestion}
+              type="button"
+            >
+              Skip question
+            </button>
           ) : null}
-          <button className="btn btn-primary" disabled={!hasAnswer} onClick={nextQuestion}>
+          <button className="btn btn-primary" onClick={nextQuestion} type="button">
             {currentQuestion === questions.length - 1
               ? "Finish interview"
               : "Next question"}

@@ -154,12 +154,18 @@ const scoreQuestion = ({ questionInput, answer, role, difficulty }) => {
   const matchedKeywords = keywords.filter((keyword) => normalizedAnswer.includes(keyword));
   const questionTokens = tokenize(metadata.question, 4);
   
-  // Calculate new score categories
-  const correctnessScore = calculateCorrectness(normalizedAnswer, keywords, matchedKeywords);
-  const relevanceScore = calculateRelevance(answer, questionTokens, answerTokens, normalizedAnswer);
-  const technicalAccuracyScore = calculateTechnicalAccuracy(normalizedAnswer, expectedTokens, answerTokens, keywords, matchedKeywords);
-  const communicationScore = calculateCommunicationScore(answer, normalizedAnswer);
-  
+  let correctnessScore = calculateCorrectness(normalizedAnswer, keywords, matchedKeywords);
+  let relevanceScore = calculateRelevance(answer, questionTokens, answerTokens, normalizedAnswer);
+  let technicalAccuracyScore = calculateTechnicalAccuracy(normalizedAnswer, expectedTokens, answerTokens, keywords, matchedKeywords);
+  let communicationScore = calculateCommunicationScore(answer, normalizedAnswer);
+
+  if (qualityFlag === "empty") {
+    correctnessScore = 0;
+    relevanceScore = 0;
+    technicalAccuracyScore = 0;
+    communicationScore = 0;
+  }
+
   // Comprehensive score: weighted average of 4 categories
   let rawScore = 
     correctnessScore * 0.3 +

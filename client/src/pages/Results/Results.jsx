@@ -17,8 +17,7 @@ const Results = () => {
       const resumeText = localStorage.getItem("resumeText") || "";
       const completeAnswers =
         questions.length > 0 &&
-        answers.length === questions.length &&
-        questions.every((_, index) => String(answers[index] || "").trim().length > 0);
+        answers.length === questions.length;
 
       if (!config.role || !completeAnswers) {
         setError("Complete an interview before viewing results.");
@@ -32,7 +31,6 @@ const Results = () => {
         answers,
         resumeText,
       });
-
       setResult(response.data);
       localStorage.setItem("latestResult", JSON.stringify(response.data));
       if (response.data.atsScore) {
@@ -185,6 +183,11 @@ const Results = () => {
     );
   }
 
+  const totalQuestions = result.questionScores?.length || 0;
+  const questionsAnswered = result.questionScores?.filter(q => q.answer && q.answer.trim().length > 0).length || 0;
+  const questionsSkipped = totalQuestions - questionsAnswered;
+  const completionPercentage = totalQuestions > 0 ? Math.round((questionsAnswered / totalQuestions) * 100) : 0;
+
   const scores = [
     ["Technical", result.technical],
     ["Communication", result.communication],
@@ -223,20 +226,43 @@ const Results = () => {
           </div>
         </article>
 
-        <article className="panel">
-          <h2>Skill breakdown</h2>
-          <div className="score-list">
-            {scores.map(([label, score]) => (
-              <div className="score-row" key={label}>
-                <span>{label}</span>
-                <div className="meter">
-                  <span style={{ width: `${score}%` }} />
-                </div>
-                <strong>{score}</strong>
+        <div className="results-metrics">
+          <article className="panel">
+            <h2>Session Stats</h2>
+            <div className="score-list">
+              <div className="score-row">
+                <span>Questions Answered</span>
+                <strong>{questionsAnswered}</strong>
               </div>
-            ))}
-          </div>
-        </article>
+              <div className="score-row">
+                <span>Questions Skipped</span>
+                <strong>{questionsSkipped}</strong>
+              </div>
+              <div className="score-row">
+                <span>Completion Percentage</span>
+                <div className="meter">
+                  <span style={{ width: `${completionPercentage}%` }} />
+                </div>
+                <strong>{completionPercentage}%</strong>
+              </div>
+            </div>
+          </article>
+
+          <article className="panel">
+            <h2>Skill breakdown</h2>
+            <div className="score-list">
+              {scores.map(([label, score]) => (
+                <div className="score-row" key={label}>
+                  <span>{label}</span>
+                  <div className="meter">
+                    <span style={{ width: `${score}%` }} />
+                  </div>
+                  <strong>{score}</strong>
+                </div>
+              ))}
+            </div>
+          </article>
+        </div>
       </section>
 
       <section className="panel">
@@ -279,7 +305,12 @@ const Results = () => {
             {result.questionScores.map((item, index) => (
               <article className="qa-card" key={`${item.question}-${index}`}>
                 <div className="section-heading">
-                  <h3>Question {index + 1}</h3>
+                  <div>
+                    <h3>Question {index + 1}</h3>
+                    <span className={`status-badge ${item.answer?.trim() ? "answered" : "skipped"}`}>
+                      {item.answer?.trim() ? "Answered" : "Skipped"}
+                    </span>
+                  </div>
                   <strong>{item.score}%</strong>
                 </div>
 
@@ -303,12 +334,13 @@ const Results = () => {
                 </div>
 
                 <p className="question-text">{item.question}</p>
-                <p className="muted"><strong>Your answer:</strong> {item.answer || "No answer recorded."}</p>
-                <p className="muted"><strong>What was correct:</strong> {item.whatWasCorrect?.join(", ") || "No correct keywords identified."}</p>
-                <p className="muted"><strong>What was incorrect:</strong> {item.whatWasIncorrect?.join(", ") || "No critical gaps identified."}</p>
-                <p className="muted"><strong>Why it is wrong:</strong> {item.whyItIsWrong || item.feedback}</p>
-                <p className="muted"><strong>Correct answer:</strong> {item.correctAnswer}</p>
-                <p className="muted"><strong>Improvement Suggestions:</strong> {item.improvementSuggestion}</p>
+                <p className="muted"><strong>Your Answer:</strong> {item.answer || "No answer recorded."}</p>
+                <p className="muted"><strong>What Was Correct:</strong> {item.whatWasCorrect?.join(", ") || "No correct concepts identified."}</p>
+                <p className="muted"><strong>What Was Incorrect:</strong> {item.whatWasIncorrect?.join(", ") || "No critical gaps identified."}</p>
+                <p className="muted"><strong>Correct Answer:</strong> {item.correctAnswer || "N/A"}</p>
+                <p className="muted"><strong>Why It Is Wrong:</strong> {item.whyItIsWrong || (item.score < 70 ? item.feedback : "No critical issue detected; the answer can still be improved.")}</p>
+                <p className="muted"><strong>How To Improve:</strong> {item.howToImprove || item.improvementSuggestion || "N/A"}</p>
+                <p className="muted"><strong>Suggested Topics To Learn:</strong> {item.studyTopics?.join(", ") || item.suggestedTopicsToLearn?.join(", ") || "None specified."}</p>
               </article>
             ))}
           </div>

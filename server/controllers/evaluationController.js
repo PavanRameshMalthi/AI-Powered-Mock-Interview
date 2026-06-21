@@ -22,8 +22,7 @@ const isClearlyWrongQuestion = (item) =>
   (item.correctnessScore < 25 && item.relevanceScore < 25);
 
 const isClearlyWrongEvaluation = (evaluation) =>
-  evaluation.overall < 40 ||
-  evaluation.questionScores?.some((item) => isClearlyWrongQuestion(item));
+  evaluation.overall < 40;
 
 const parseEvaluation = (responseText) => {
   try {
@@ -59,7 +58,11 @@ const parseEvaluation = (responseText) => {
           whatWasCorrect: Array.isArray(item.whatWasCorrect) ? item.whatWasCorrect.map(String) : [],
           whatWasIncorrect: Array.isArray(item.whatWasIncorrect) ? item.whatWasIncorrect.map(String) : [],
           feedback: String(item.feedback || "").trim(),
-          improvementSuggestion: String(item.improvementSuggestion || "").trim(),
+          improvementSuggestion: String(item.improvementSuggestion || item.howToImprove || "").trim(),
+          whyItIsWrong: String(item.whyItIsWrong || "").trim(),
+          correctAnswer: String(item.correctAnswer || "").trim(),
+          howToImprove: String(item.howToImprove || item.improvementSuggestion || "").trim(),
+          suggestedTopicsToLearn: Array.isArray(item.suggestedTopicsToLearn) ? item.suggestedTopicsToLearn.map(String) : [],
         }))
       : null;
 
@@ -127,18 +130,31 @@ const mergeEvaluations = (geminiEvaluation, localEvaluation) => {
         whatWasIncorrect: uniqueStrings([...(geminiQ.whatWasIncorrect || []), ...(localQ.whatWasIncorrect || [])]),
         feedback: geminiQ.feedback || localQ.feedback,
         improvementSuggestion: geminiQ.improvementSuggestion || localQ.improvementSuggestion,
+        whyItIsWrong: geminiQ.whyItIsWrong || localQ.whyItIsWrong,
+        correctAnswer: geminiQ.correctAnswer || localQ.correctAnswer,
+        howToImprove: geminiQ.howToImprove || localQ.howToImprove,
+        suggestedTopicsToLearn: uniqueStrings([...(geminiQ.suggestedTopicsToLearn || []), ...(localQ.suggestedTopicsToLearn || [])]),
       };
 
-      if (qIsClearlyWrong) {
-        mergedQuestion.score = Math.min(mergedQuestion.score, localQ.score, 35);
+      const isWrongAnswer = geminiQ.score < 40 || localQ.score < 40 || qIsClearlyWrong;
+      if (isWrongAnswer) {
+        mergedQuestion.score = Math.min(mergedQuestion.score, geminiQ.score, localQ.score, 35);
         mergedQuestion.correctnessScore = Math.min(mergedQuestion.correctnessScore, localQ.correctnessScore);
         mergedQuestion.relevanceScore = Math.min(mergedQuestion.relevanceScore, localQ.relevanceScore);
         mergedQuestion.technicalAccuracyScore = Math.min(
           mergedQuestion.technicalAccuracyScore,
           localQ.technicalAccuracyScore
         );
-        mergedQuestion.feedback = localQ.feedback;
-        mergedQuestion.improvementSuggestion = localQ.improvementSuggestion;
+        mergedQuestion.feedback = localQ.feedback || geminiQ.feedback;
+        mergedQuestion.improvementSuggestion = localQ.improvementSuggestion || geminiQ.improvementSuggestion;
+
+        if (localQ.isEmpty || !localQ.answer?.trim()) {
+          mergedQuestion.score = 0;
+          mergedQuestion.correctnessScore = 0;
+          mergedQuestion.relevanceScore = 0;
+          mergedQuestion.technicalAccuracyScore = 0;
+          mergedQuestion.communicationScore = 0;
+        }
       }
 
       return mergedQuestion;
@@ -173,29 +189,39 @@ const enrichEvaluation = (evaluation) => {
     weaknesses: weaknesses.length ? weaknesses : ["deeper role-specific detail"],
     suggestions,
     studyTopics,
-    questionScores: questionScores.map((item) => ({
-      question: item.question,
-      answer: item.answer,
-      score: item.score,
-      correctnessScore: item.correctnessScore,
-      relevanceScore: item.relevanceScore,
-      technicalAccuracyScore: item.technicalAccuracyScore,
-      communicationScore: item.communicationScore,
-      feedback: item.feedback,
-      whatWasCorrect: item.whatWasCorrect || [],
-      whatWasIncorrect: item.whatWasIncorrect || [],
-      whyItIsWrong:
-        item.score < 70
-          ? item.feedback
-          : "No critical issue detected; the answer can still be improved with sharper detail.",
-      correctAnswer: item.correctAnswer,
-      improvementSuggestion: item.improvementSuggestion || (
-        item.score < 70
-          ? `Review ${studyTopics.slice(0, 3).join(", ")} and re-answer with a concrete example.`
-          : "Polish this answer with measurable impact and a clear tradeoff."
-      ),
-      studyTopics: uniqueStrings(item.whatWasIncorrect || []).slice(0, 4),
-    })),
+    questionScores: questionScores.map((item) => {
+      const qStudyTopics = uniqueStrings([...(item.suggestedTopicsToLearn || []), ...(item.whatWasIncorrect || [])]).slice(0, 4);
+      return {
+        question: item.question,
+        answer: item.answer,
+        score: item.score,
+        correctnessScore: item.correctnessScore,
+        relevanceScore: item.relevanceScore,
+        technicalAccuracyScore: item.technicalAccuracyScore,
+        communicationScore: item.communicationScore,
+        feedback: item.feedback,
+        whatWasCorrect: item.whatWasCorrect || [],
+        whatWasIncorrect: item.whatWasIncorrect || [],
+        whyItIsWrong:
+          item.score === 0 || !item.answer?.trim()
+            ? "No answer was provided for this question."
+            : item.score < 70
+            ? item.whyItIsWrong || item.feedback
+            : "No critical issue detected; the answer can still be improved with sharper detail.",
+        correctAnswer: item.correctAnswer || "See role expected guidelines.",
+        improvementSuggestion:
+          item.score === 0 || !item.answer?.trim()
+            ? "Answer the question next time. Cover the expected keywords and structure your response with examples."
+            : item.improvementSuggestion || item.howToImprove || (
+                item.score < 70
+                  ? `Review ${studyTopics.slice(0, 3).join(", ")} and re-answer with a concrete example.`
+                  : "Polish this answer with measurable impact and a clear tradeoff."
+              ),
+        studyTopics: qStudyTopics.length ? qStudyTopics : studyTopics.slice(0, 3),
+        isEmpty: item.isEmpty || false,
+        isIrrelevant: item.isIrrelevant || false,
+      };
+    }),
     improvementTracker: {
       mistakesMade: weakQuestions.map((item) => item.feedback).slice(0, 5),
       weakTopics: studyTopics,
@@ -262,15 +288,17 @@ Scoring bands:
 - Correct, complete, role-specific answers: 86-100 score.
 
 For each question, compute:
-1. score: Overall score (0-100) based on the above bands. A wrong answer MUST receive a score <= 25.
+1. score: Overall score (0-100) based on the above bands. A wrong answer MUST receive a score <= 25. An empty/skipped answer MUST receive a score of 0.
 2. correctnessScore: How correct the technical details are (0-100).
 3. relevanceScore: How directly and relevantly the answer addresses the question (0-100).
 4. technicalAccuracyScore: How technically accurate and correct the answer is (0-100).
 5. communicationScore: How clear, structured, and professional the communication is (0-100).
 6. whatWasCorrect: An array of key technical terms/concepts from the keywords/expected answer that the candidate correctly mentioned and explained (up to 5 items).
 7. whatWasIncorrect: An array of key technical terms/concepts from the keywords/expected answer that the candidate missed or got wrong (up to 5 items).
-8. feedback: Explanation of what was good and what was missing or incorrect in the answer (2-3 sentences).
-9. improvementSuggestion: Concrete advice on how to improve this answer (1-2 sentences).
+8. correctAnswer: A concise (1-2 sentences) explanation of what the correct answer should be.
+9. whyItIsWrong: A concise explanation of why the answer is wrong or incomplete, or "No critical issues detected" if it is correct.
+10. howToImprove: Concrete advice on how the candidate can improve this answer.
+11. suggestedTopicsToLearn: An array of up to 4 specific topics or keywords the user should study to improve.
 
 Also compute the overall interview scores:
 - overall: Weighted average of the individual question scores.
@@ -295,8 +323,10 @@ Return ONLY a JSON object in this format:
       "communicationScore": 80,
       "whatWasCorrect": ["React hooks", "functional components"],
       "whatWasIncorrect": ["testing strategy"],
-      "feedback": "...",
-      "improvementSuggestion": "..."
+      "correctAnswer": "...",
+      "whyItIsWrong": "...",
+      "howToImprove": "...",
+      "suggestedTopicsToLearn": ["..."]
     }
   ]
 }

@@ -171,8 +171,8 @@ describe("Evaluation Engine - Score Calculation", () => {
     });
   });
 
-  describe("EMPTY ANSWER", () => {
-    test("should score 0-10 for empty answer", () => {
+  describe("EMPTY / SKIPPED ANSWER", () => {
+    test("should score exactly 0 for empty answer", () => {
       const result = scoreQuestion({
         questionInput: testQuestion,
         answer: "",
@@ -186,11 +186,15 @@ describe("Evaluation Engine - Score Calculation", () => {
         feedback: result.feedback,
       });
 
-      expect(result.score).toBeLessThanOrEqual(10);
+      expect(result.score).toBe(0);
+      expect(result.correctnessScore).toBe(0);
+      expect(result.relevanceScore).toBe(0);
+      expect(result.technicalAccuracyScore).toBe(0);
+      expect(result.communicationScore).toBe(0);
       expect(result.isEmpty).toBe(true);
     });
 
-    test("should score minimal for whitespace-only answer", () => {
+    test("should score exactly 0 for whitespace-only answer", () => {
       const result = scoreQuestion({
         questionInput: testQuestion,
         answer: "   ",
@@ -198,7 +202,7 @@ describe("Evaluation Engine - Score Calculation", () => {
         difficulty: "Intermediate",
       });
 
-      expect(result.score).toBeLessThanOrEqual(10);
+      expect(result.score).toBe(0);
       expect(result.isEmpty).toBe(true);
     });
 

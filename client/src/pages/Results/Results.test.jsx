@@ -70,13 +70,26 @@ test("shows an error when interview state is missing", async () => {
   expect(screen.getByText(/complete an interview/i)).toBeInTheDocument();
 });
 
-test("does not evaluate when any question is unanswered", async () => {
+test("evaluates even when a question is skipped/empty", async () => {
   localStorage.setItem("questions", JSON.stringify(["Question one?", "Question two?"]));
   localStorage.setItem("answers", JSON.stringify(["Answered.", ""]));
   localStorage.setItem(
     "interviewConfig",
     JSON.stringify({ role: "Frontend Developer" })
   );
+  api.post.mockResolvedValue({
+    data: {
+      overall: 45,
+      technical: 50,
+      communication: 40,
+      problemSolving: 45,
+      feedback: "Partial answer.",
+      questionScores: [
+        { question: "Question one?", answer: "Answered.", score: 90 },
+        { question: "Question two?", answer: "", score: 0 },
+      ],
+    },
+  });
 
   render(
     <MemoryRouter>
@@ -85,8 +98,8 @@ test("does not evaluate when any question is unanswered", async () => {
   );
 
   await waitFor(() => {
-    expect(screen.getByRole("heading", { name: /results unavailable/i })).toBeInTheDocument();
+    expect(screen.getAllByText("45")[0]).toBeInTheDocument();
   });
 
-  expect(api.post).not.toHaveBeenCalled();
+  expect(api.post).toHaveBeenCalled();
 });

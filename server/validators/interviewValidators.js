@@ -35,10 +35,10 @@ const evaluationRules = [
     .custom((answers, { req }) => {
       const questions = Array.isArray(req.body.questions) ? req.body.questions : [];
       if (answers.length !== questions.length) {
-        throw new Error("Every question must have an answer");
+        throw new Error("Every question must have an answer slot");
       }
-      if (answers.some((answer) => String(answer || "").trim().length === 0)) {
-        throw new Error("Every question must have an answer");
+      if (answers.some((answer) => typeof answer !== "string")) {
+        throw new Error("Answers must be an array of strings");
       }
       return true;
     }),

@@ -40,17 +40,23 @@ test("shows empty state when no questions exist", () => {
   expect(screen.getByRole("heading", { name: /no interview questions/i })).toBeInTheDocument();
 });
 
-test("prevents moving forward without an answer", async () => {
+test("allows skipping the question when no answer is entered", async () => {
   localStorage.setItem("questions", JSON.stringify(["Question one?"]));
   localStorage.setItem("answers", JSON.stringify([]));
 
   render(
-    <MemoryRouter>
-      <InterviewSession />
+    <MemoryRouter initialEntries={["/interview-session"]}>
+      <Routes>
+        <Route path="/interview-session" element={<InterviewSession />} />
+        <Route path="/results" element={<h1>Results</h1>} />
+      </Routes>
     </MemoryRouter>
   );
 
-  expect(screen.getByRole("button", { name: /finish interview/i })).toBeDisabled();
-  expect(screen.getByText("Please enter your answer before continuing.")).toBeInTheDocument();
-  expect(showError).not.toHaveBeenCalled();
+  const skipBtn = screen.getByRole("button", { name: /skip question/i });
+  expect(skipBtn).toBeInTheDocument();
+  await userEvent.click(skipBtn);
+
+  expect(JSON.parse(localStorage.getItem("answers"))).toEqual([""]);
+  expect(screen.getByRole("heading", { name: /results/i })).toBeInTheDocument();
 });

@@ -20,7 +20,7 @@ const getAdminSummary = asyncHandler(async (req, res) => {
       User.find()
         .sort({ createdAt: -1 })
         .limit(25)
-        .select("name email phone authProvider role isEmailVerified isPhoneVerified createdAt"),
+        .select("name email authProvider role isEmailVerified createdAt"),
       Interview.find()
         .sort({ createdAt: -1 })
         .limit(25)

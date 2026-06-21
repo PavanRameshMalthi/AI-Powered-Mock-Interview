@@ -473,8 +473,9 @@ describe("protected interview APIs", () => {
     );
   });
 
-  test("rejects an empty answer before evaluation", async () => {
+  test("accepts empty/skipped answers and returns 0 score for them", async () => {
     model.generateContent.mockRejectedValue(new Error("provider down"));
+    Interview.create.mockResolvedValue({});
 
     const response = await request(app)
       .post("/api/evaluation/evaluate")
@@ -485,17 +486,28 @@ describe("protected interview APIs", () => {
         answers: [""],
       });
 
-    expect(response.status).toBe(400);
-    expect(response.body.message).toBe("Validation failed");
-    expect(response.body.errors).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          field: "answers",
-          message: expect.stringMatching(/every question must have an answer/i),
-        }),
-      ])
-    );
-    expect(Interview.create).not.toHaveBeenCalled();
+    expect(response.status).toBe(200);
+    expect(response.body.overall).toBe(0);
+    expect(response.body.questionScores[0].score).toBe(0);
+    expect(response.body.questionScores[0].isEmpty).toBe(true);
+    expect(Interview.create).toHaveBeenCalled();
+  });
+
+  test("processes answers containing html tags safely for XSS prevention", async () => {
+    model.generateContent.mockRejectedValue(new Error("provider down"));
+    Interview.create.mockResolvedValue({});
+
+    const response = await request(app)
+      .post("/api/evaluation/evaluate")
+      .set("Authorization", `Bearer ${token()}`)
+      .send({
+        role: "Frontend Developer",
+        questions: ["Explain React state management."],
+        answers: ["<script>alert('XSS')</script>Using React hooks for state."],
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.body.overall).toBeDefined();
   });
 
   test("returns low detailed scores for a random answer", async () => {
