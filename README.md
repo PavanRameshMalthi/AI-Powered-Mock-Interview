@@ -492,7 +492,7 @@ GitHub:
 https://github.com/PavanRameshMalthi
 
 LinkedIn:
-https://linkedin.com/in/pavan-ramesh-malthi-8a8a232a5
+www.linkedin.com/in/pavan-ramesh-malthi
 
 ---
 
