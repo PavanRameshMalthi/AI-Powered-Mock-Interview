@@ -10,12 +10,13 @@ const ProtectedRoute = ({ children }) => {
     if (token) return;
 
     let mounted = true;
+    const storage = localStorage.getItem("user") ? localStorage : sessionStorage;
     authService
-      .refreshSession()
+      .refreshSession({ rememberMe: storage === localStorage })
       .then((response) => {
         if (!mounted) return;
-        localStorage.setItem("token", response.token);
-        localStorage.setItem("user", JSON.stringify(response.user));
+        storage.setItem("token", response.token);
+        storage.setItem("user", JSON.stringify(response.user));
         setStatus("ready");
       })
       .catch(() => {
