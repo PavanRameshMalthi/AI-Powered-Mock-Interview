@@ -36,7 +36,7 @@ const upload = multer({
       extension === ".docx";
 
     if (!isPdf && !isDocx) {
-      return cb(new Error("Only PDF and DOCX resumes are allowed"));
+      return cb(new Error("Only PDF and DOCX files are supported."));
     }
 
     cb(null, true);

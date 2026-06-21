@@ -13,7 +13,7 @@ const assertPdfSignature = async (filePath) => {
     const buffer = Buffer.alloc(5);
     await handle.read(buffer, 0, 5, 0);
     if (buffer.toString("utf8") !== "%PDF-") {
-      throw new AppError("Uploaded file is not a valid PDF", 400);
+      throw new AppError("Resume file appears corrupted.", 400);
     }
   } finally {
     await handle.close();
@@ -26,7 +26,7 @@ const assertDocxSignature = async (filePath) => {
     const buffer = Buffer.alloc(4);
     await handle.read(buffer, 0, 4, 0);
     if (buffer.toString("utf8") !== "PK\u0003\u0004") {
-      throw new AppError("Uploaded file is not a valid DOCX", 400);
+      throw new AppError("Resume file appears corrupted.", 400);
     }
   } finally {
     await handle.close();
@@ -46,7 +46,7 @@ const validateResumeFile = async (filePath) => {
     return;
   }
 
-  throw new AppError("Only PDF and DOCX resumes are allowed", 400);
+  throw new AppError("Only PDF and DOCX files are supported.", 400);
 };
 
 const persistAtsReport = async ({ userId, role, resumeText, atsScore }) => {
@@ -70,43 +70,67 @@ const uploadResume = asyncHandler(async (req, res) => {
     throw new AppError("Please upload a PDF or DOCX resume", 400);
   }
 
+  if (req.file.size === 0) {
+    throw new AppError("No readable text found in resume.", 422);
+  }
+
+  // Debug logging: PDF uploaded successfully & buffer received correctly
+  console.log("File Name:", req.file?.originalname);
+  console.log("File Size:", req.file?.size);
+
   try {
     await validateResumeFile(req.file.path);
-    const resumeText = await extractResumeText(req.file.path);
-    if (!resumeText.trim()) {
-      throw new AppError(
-        "Unable to extract readable resume text from this file.",
-        422
-      );
+  } catch (error) {
+    await fs.unlink(req.file.path).catch(() => {});
+    if (error instanceof AppError) {
+      throw error;
     }
-    const atsScore = scoreResumeForRole({ resumeText });
+    throw new AppError("Resume file appears corrupted.", 400);
+  }
 
+  let resumeText;
+  try {
+    resumeText = await extractResumeText(req.file.path);
+  } catch (error) {
+    await fs.unlink(req.file.path).catch(() => {});
+    if (error instanceof AppError) {
+      throw error;
+    }
+    throw new AppError("Resume file appears corrupted.", 400);
+  }
+
+  // Debug logging: Text extracted successfully
+  console.log("Extracted Text Length:", resumeText?.length);
+  console.log("Text Preview:", resumeText?.substring(0, 300));
+
+  let atsScore;
+  try {
+    // Debug logging: ATS analysis starts
+    console.log("ATS analysis starts");
+    atsScore = scoreResumeForRole({ resumeText });
+  } catch (error) {
+    await fs.unlink(req.file.path).catch(() => {});
+    throw new AppError("Resume parsed successfully but ATS analysis failed.", 500);
+  }
+
+  try {
     await persistAtsReport({
       userId: req.user.id,
       role: "",
       resumeText,
       atsScore,
     });
-
-    await fs.unlink(req.file.path).catch(() => {});
-
-    res.status(200).json({
-      success: true,
-      resumeText,
-      atsScore,
-    });
   } catch (error) {
-    await fs.unlink(req.file.path).catch(() => {});
-
-    if (error instanceof AppError) {
-      throw error;
-    }
-
-    throw new AppError(
-      "Unable to read this resume. Please upload a text-based PDF or DOCX file.",
-      422
-    );
+    logger.warn({ err: error }, "ATS report persistence failed");
   }
+
+  await fs.unlink(req.file.path).catch(() => {});
+
+  res.status(200).json({
+    success: true,
+    resumeText,
+    atsScore,
+  });
 });
 
 module.exports = {

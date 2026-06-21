@@ -742,7 +742,7 @@ describe("resume upload API", () => {
       });
 
     expect(response.status).toBe(400);
-    expect(response.body.message).toBe("Uploaded file is not a valid DOCX");
+    expect(response.body.message).toBe("Resume file appears corrupted.");
   });
 
   test("rejects TXT resume uploads", async () => {
@@ -767,7 +767,7 @@ describe("resume upload API", () => {
       });
 
     expect(response.status).toBe(400);
-    expect(response.body.message).toBe("Uploaded file is not a valid PDF");
+    expect(response.body.message).toBe("Resume file appears corrupted.");
   });
 
   test("rejects oversized PDF uploads", async () => {

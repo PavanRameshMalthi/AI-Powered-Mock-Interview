@@ -29,7 +29,7 @@ const errorHandler = (error, req, res, next) => {
     (error.name === "MulterError" || error.name === "ValidationError" ? 400 : undefined) ||
     (
       error.message === "Only PDF resumes are allowed" ||
-      error.message === "Only PDF and DOCX resumes are allowed"
+      error.message === "Only PDF and DOCX files are supported."
         ? 400
         : 500
     );

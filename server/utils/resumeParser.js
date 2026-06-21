@@ -1,7 +1,9 @@
-const pdfParse = require("pdf-parse");
+const { PDFParse } = require("pdf-parse");
 const fs = require("fs");
 const path = require("path");
 const zlib = require("zlib");
+const Tesseract = require("tesseract.js");
+const { AppError } = require("../middleware/errorMiddleware");
 
 const findEndOfCentralDirectory = (buffer) => {
   for (let offset = buffer.length - 22; offset >= 0; offset -= 1) {
@@ -87,21 +89,88 @@ const extractDocxText = (dataBuffer) => {
     .trim();
 };
 
-const extractResumeText = async (
-  filePath
-) => {
-  const dataBuffer =
-    fs.readFileSync(filePath);
+const extractResumeText = async (filePath) => {
+  const dataBuffer = fs.readFileSync(filePath);
 
   if (path.extname(filePath).toLowerCase() === ".docx") {
-    return extractDocxText(dataBuffer);
+    const text = extractDocxText(dataBuffer);
+    if (!text.trim() || text.trim().length < 10) {
+      throw new AppError("No readable text found in resume.", 422);
+    }
+    return text;
   }
 
-  const data =
-    await pdfParse(dataBuffer);
+  let data;
+  let parser;
+  try {
+    parser = new PDFParse({ data: dataBuffer });
+    data = await parser.getText();
+  } catch (error) {
+    throw new AppError("Resume file appears corrupted.", 400);
+  }
 
-  return data.text;
+  const extractedText = data.text || "";
+  const hasLetters = /[a-zA-Z]/.test(extractedText);
+
+  if (!extractedText.trim() || extractedText.trim().length < 10 || !hasLetters) {
+    // Attempt Gemini OCR fallback if configured
+    if (process.env.GEMINI_API_KEY) {
+      try {
+        const { GoogleGenerativeAI } = require("@google/generative-ai");
+        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        const ocrModel = genAI.getGenerativeModel({
+          model: process.env.GEMINI_MODEL || "gemini-2.0-flash",
+        });
+
+        const ocrResponse = await ocrModel.generateContent([
+          {
+            inlineData: {
+              data: dataBuffer.toString("base64"),
+              mimeType: "application/pdf",
+            },
+          },
+          "Extract all readable text from this scanned resume PDF. Return only the plain text of the resume. Do not explain or add commentary.",
+        ]);
+
+        const ocrText = ocrResponse.response?.text?.() || "";
+        if (ocrText && ocrText.trim().length >= 10 && /[a-zA-Z]/.test(ocrText)) {
+          return ocrText.trim();
+        }
+      } catch (ocrError) {
+        console.warn("Gemini OCR failed, attempting Tesseract fallback:", ocrError.message);
+      }
+    }
+
+    // Attempt local Tesseract.js OCR fallback
+    try {
+      const screenshotResult = await parser.getScreenshot({
+        imageBuffer: true,
+        imageDataUrl: false,
+      });
+
+      if (screenshotResult && screenshotResult.pages && screenshotResult.pages.length > 0) {
+        let tesseractText = "";
+        for (const page of screenshotResult.pages) {
+          const { data: { text } } = await Tesseract.recognize(
+            page.data,
+            "eng"
+          );
+          if (text) {
+            tesseractText += text + "\n";
+          }
+        }
+        if (tesseractText.trim().length >= 10 && /[a-zA-Z]/.test(tesseractText)) {
+          return tesseractText.trim();
+        }
+      }
+    } catch (ocrError) {
+      throw new AppError("No readable text found in resume.", 422);
+    }
+
+    throw new AppError("No readable text found in resume.", 422);
+  }
+
+  return extractedText;
 };
 
-module.exports =
-  extractResumeText;
+module.exports = extractResumeText;

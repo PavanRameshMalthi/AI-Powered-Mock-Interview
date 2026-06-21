@@ -1,6 +1,6 @@
 import api from "./api";
 
-const uploadResume = async (formData) => {
+const uploadResume = async (formData, onProgress) => {
   const response = await api.post(
     "/resume/upload",
     formData,
@@ -9,6 +9,7 @@ const uploadResume = async (formData) => {
         "Content-Type":
           "multipart/form-data",
       },
+      onUploadProgress: onProgress,
     }
   );
 
