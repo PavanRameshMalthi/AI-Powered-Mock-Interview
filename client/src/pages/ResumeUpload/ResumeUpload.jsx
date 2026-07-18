@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   dismissToast,
   showError,
@@ -7,27 +8,84 @@ import {
   showSuccess,
 } from "../../components/UI/Toast";
 import resumeService from "../../services/resumeService";
+import ATSAnalysisPanel from "./components/ATSAnalysisPanel";
+import ResumeHistoryPanel from "./components/ResumeHistoryPanel";
+
+const ALLOWED_TYPES = [
+  "application/pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+];
 
 const ResumeUpload = () => {
-  const allowedTypes = [
-    "application/pdf",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  ];
   const [file, setFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [resumeText, setResumeText] = useState(
-    localStorage.getItem("resumeText") || ""
-  );
-  const [atsScore, setAtsScore] = useState(() => {
-    const stored = localStorage.getItem("atsScore");
-    return stored ? JSON.parse(stored) : null;
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  // ATS data state — persisted in localStorage for interview setup
+  const [atsData, setAtsData] = useState(() => {
+    try {
+      const stored = localStorage.getItem("atsData");
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
   });
 
+  // Trigger history panel to refresh after upload
+  const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
+
+  // For viewing a history card's ATS data (view-only mode)
+  const [viewingVersion, setViewingVersion] = useState(null);
+
+  // Fetch active resume from MongoDB on mount to ensure synchronization
+  useEffect(() => {
+    const fetchActiveResume = async () => {
+      // If we don't have local cached data, show skeleton loading
+      if (!atsData) {
+        setIsAnalyzing(true);
+      }
+      try {
+        const response = await resumeService.getActiveResume();
+        if (response.success && response.resume) {
+          const res = response.resume;
+          const activeAtsData = {
+            atsScore:     res.atsScore,
+            atsAnalysis:  res.atsAnalysis,
+            sectionsFound: res.sectionsFound,
+            aiSuggestions: res.aiSuggestions,
+            resumeStats:  res.resumeStats,
+            resumeId:     res._id,
+            version:      res.version,
+            resumeName:   res.resumeName,
+          };
+          setAtsData(activeAtsData);
+
+          // Persist to localStorage for interview flow compatibility
+          localStorage.setItem("atsData", JSON.stringify(activeAtsData));
+          if (res.extractedText) {
+            localStorage.setItem("resumeText", res.extractedText);
+          }
+          if (res.atsScore) {
+            localStorage.setItem("atsScore", JSON.stringify(res.atsScore));
+          }
+          localStorage.setItem("activeResumeId", res._id);
+        }
+      } catch (error) {
+        console.error("Failed to fetch active resume:", error);
+      } finally {
+        setIsAnalyzing(false);
+      }
+    };
+
+    fetchActiveResume();
+  }, []);
+
+  // ── File selection ──────────────────────────────────────────────────────────
   const handleFileChange = (event) => {
     const selected = event.target.files?.[0] || null;
 
-    if (selected && !allowedTypes.includes(selected.type)) {
+    if (selected && !ALLOWED_TYPES.includes(selected.type)) {
       showError("Please select a PDF or DOCX file");
       event.target.value = "";
       setFile(null);
@@ -44,6 +102,24 @@ const ResumeUpload = () => {
     setFile(selected);
   };
 
+  // ── Drag & drop support ─────────────────────────────────────────────────────
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const dropped = e.dataTransfer.files?.[0];
+    if (!dropped) return;
+
+    if (!ALLOWED_TYPES.includes(dropped.type)) {
+      showError("Please drop a PDF or DOCX file");
+      return;
+    }
+    if (dropped.size > 5 * 1024 * 1024) {
+      showError("Resume must be smaller than 5 MB");
+      return;
+    }
+    setFile(dropped);
+  };
+
+  // ── Upload + Auto ATS ──────────────────────────────────────────────────────
   const handleUpload = async () => {
     if (!file) {
       showError("Choose a PDF or DOCX resume first");
@@ -52,177 +128,248 @@ const ResumeUpload = () => {
 
     setIsUploading(true);
     setUploadProgress(0);
-    const toastId = showLoading("Reading resume...");
+    setAtsData(null);
+    setViewingVersion(null);
+    const toastId = showLoading("Uploading & analyzing resume...");
 
     try {
       const formData = new FormData();
       formData.append("resume", file);
 
+      setIsAnalyzing(true);
+
       const response = await resumeService.uploadResume(formData, (progressEvent) => {
-        const percentCompleted = Math.round(
-          (progressEvent.loaded * 100) / progressEvent.total
-        );
-        setUploadProgress(percentCompleted);
+        const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+        setUploadProgress(percent);
       });
 
-      localStorage.setItem("resumeText", response.resumeText);
-      localStorage.setItem("atsScore", JSON.stringify(response.atsScore));
-      setResumeText(response.resumeText);
-      setAtsScore(response.atsScore);
+      // Persist to localStorage for interview setup
+      if (response.resumeText) {
+        localStorage.setItem("resumeText", response.resumeText);
+      }
+      if (response.atsScore) {
+        localStorage.setItem("atsScore", JSON.stringify(response.atsScore));
+      }
+      if (response.resumeId) {
+        localStorage.setItem("activeResumeId", response.resumeId);
+      }
+
+      // Build unified atsData object
+      const newAtsData = {
+        atsScore:     response.atsScore,
+        atsAnalysis:  response.atsAnalysis,
+        sectionsFound: response.sectionsFound,
+        aiSuggestions: response.aiSuggestions,
+        resumeStats:  response.resumeStats,
+        resumeId:     response.resumeId,
+        version:      response.version,
+        resumeName:   response.resumeName,
+      };
+
+      localStorage.setItem("atsData", JSON.stringify(newAtsData));
+      setAtsData(newAtsData);
+
       dismissToast(toastId);
-      showSuccess("Resume uploaded successfully");
+      showSuccess(`Resume v${response.version} uploaded — ATS Score: ${response.atsScore?.score ?? 0}/100`);
+
+      // Refresh history panel
+      setHistoryRefreshKey((k) => k + 1);
+      setFile(null);
     } catch (error) {
       dismissToast(toastId);
-      showError(error.response?.data?.message || "Upload failed");
+      showError(error.response?.data?.message || "Upload failed. Please try again.");
     } finally {
       setIsUploading(false);
       setUploadProgress(0);
+      setIsAnalyzing(false);
     }
   };
 
+  // ── Handle restore / view from history panel ────────────────────────────────
+  const handleRestoreData = useCallback((data) => {
+    if (!data) return;
+
+    const newAtsData = {
+      atsScore:     data.atsScore,
+      atsAnalysis:  data.atsAnalysis,
+      sectionsFound: data.sectionsFound,
+      aiSuggestions: data.aiSuggestions,
+      resumeStats:  data.resumeStats,
+      resumeId:     data.resumeId,
+      version:      data.version,
+    };
+
+    setAtsData(newAtsData);
+    setViewingVersion(data.viewOnly ? data.version : null);
+
+    if (!data.viewOnly) {
+      localStorage.setItem("atsData", JSON.stringify(newAtsData));
+      if (data.resumeText) localStorage.setItem("resumeText", data.resumeText);
+      if (data.atsScore) localStorage.setItem("atsScore", JSON.stringify(data.atsScore));
+      if (data.resumeId) localStorage.setItem("activeResumeId", data.resumeId);
+    }
+
+    // Scroll to ATS panel
+    setTimeout(() => {
+      document.getElementById("ats-panel-anchor")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 200);
+  }, []);
+
+  const showATS = atsData || isAnalyzing;
+
   return (
     <main className="app-shell narrow">
+      {/* ── Page Header ─────────────────────────────────────────────────────── */}
       <header className="page-header">
-        <p className="eyebrow">Resume context</p>
-        <h1>Upload resume</h1>
+        <p className="eyebrow">Resume Context</p>
+        <h1>Upload Resume</h1>
         <p className="muted">
-          PDF or DOCX, up to 5 MB. The extracted text stays in this browser for
-          the next interview setup.
+          PDF or DOCX, up to 5 MB. Your resume is automatically analyzed for ATS
+          compatibility and saved with full version history.
         </p>
       </header>
 
-      <section className="panel">
-        <label className="file-drop">
+      {/* ── Upload Card ──────────────────────────────────────────────────────── */}
+      <motion.section
+        className="panel"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        <label
+          className={`file-drop enhanced-drop ${file ? "has-file" : ""}`}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={handleDrop}
+        >
           <input
             accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             onChange={handleFileChange}
             type="file"
             disabled={isUploading}
           />
-          <span>{file ? file.name : "Choose a PDF or DOCX resume"}</span>
+          <span style={{ display: "none" }}>Choose a PDF or DOCX resume</span>
+          <div className="drop-zone-content">
+            <span className="drop-icon">{file ? "📄" : "☁️"}</span>
+            <span className="drop-text">
+              {file ? file.name : "Drop your resume here or click to browse"}
+            </span>
+            {!file && (
+              <span className="drop-hint">PDF or DOCX · Max 5 MB</span>
+            )}
+            {file && (
+              <span className="drop-hint">
+                {(file.size / 1024).toFixed(1)} KB · Ready to upload
+              </span>
+            )}
+          </div>
         </label>
 
-        {isUploading && (
-          <div style={{ marginTop: "16px" }}>
-            <div className="spinner-row">
-              <div className="loading-spinner" />
-              <span>Extracting & Analyzing... {uploadProgress}%</span>
-            </div>
-            <div className="upload-progress-container">
-              <div
-                className="upload-progress-bar"
-                style={{ width: `${uploadProgress}%` }}
-              />
-            </div>
-          </div>
-        )}
+        {/* Upload progress */}
+        <AnimatePresence>
+          {isUploading && (
+            <motion.div
+              className="upload-progress-wrap"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+            >
+              <div className="spinner-row">
+                <div className="loading-spinner" />
+                <span>
+                  {uploadProgress < 100
+                    ? `Uploading... ${uploadProgress}%`
+                    : "Running ATS analysis & AI suggestions..."}
+                </span>
+              </div>
+              <div className="upload-progress-container">
+                <motion.div
+                  className="upload-progress-bar"
+                  animate={{ width: `${uploadProgress}%` }}
+                  transition={{ ease: "easeOut" }}
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
+        {/* Action buttons */}
         <div className="button-row" style={{ marginTop: "20px" }}>
-          <button className="btn btn-primary" onClick={handleUpload} disabled={isUploading}>
-            Upload resume
+          <button
+            className="btn btn-primary"
+            onClick={handleUpload}
+            disabled={isUploading}
+            id="upload-resume-btn"
+          >
+            {isUploading ? (
+              <>
+                <span className="btn-spinner" />
+                Analyzing...
+              </>
+            ) : (
+              "Upload resume"
+            )}
           </button>
-          <Link className="btn btn-secondary" to="/interview-setup" style={{ pointerEvents: isUploading ? "none" : "auto", opacity: isUploading ? 0.6 : 1 }}>
-            Continue to setup
+          <Link
+            className="btn btn-secondary"
+            to="/interview-setup"
+            style={{
+              pointerEvents: isUploading ? "none" : "auto",
+              opacity: isUploading ? 0.6 : 1,
+            }}
+          >
+            Continue to Interview →
           </Link>
         </div>
-      </section>
+      </motion.section>
 
-      {resumeText ? (
-        <section className="panel">
-          <div className="section-heading">
-            <h2>Extracted preview</h2>
-            <span>{resumeText.length} characters</span>
-          </div>
-          <p className="resume-preview">{resumeText.slice(0, 900)}</p>
-
-          {atsScore ? (
-            <div className="ats-dashboard">
-              <div className="ats-score-gauge-container">
-                <div className="ats-score-circle">
-                  {atsScore.score}%
-                </div>
-                <div className="ats-score-info">
-                  <h3>{atsScore.score}% ATS readiness</h3>
-                  <p>Analyzed Match Level: <strong>{atsScore.level}</strong></p>
-                </div>
-              </div>
-
-              <div className="ats-sections-grid">
-                {atsScore.matchedKeywords && atsScore.matchedKeywords.length > 0 && (
-                  <div className="ats-detail-card">
-                    <h3>Matched Keywords ({atsScore.matchedKeywords.length})</h3>
-                    <div className="ats-pills-list">
-                      {atsScore.matchedKeywords.map((kw, i) => (
-                        <span key={i} className="ats-pill matched">{kw}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {atsScore.missingKeywords && atsScore.missingKeywords.length > 0 && (
-                  <div className="ats-detail-card">
-                    <h3>Missing Skills ({atsScore.missingKeywords.length})</h3>
-                    <div className="ats-pills-list">
-                      {atsScore.missingKeywords.map((kw, i) => (
-                        <span key={i} className="ats-pill missing">{kw}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {atsScore.skillsDetected && atsScore.skillsDetected.length > 0 && (
-                  <div className="ats-detail-card">
-                    <h3>Skills Detected ({atsScore.skillsDetected.length})</h3>
-                    <div className="ats-pills-list">
-                      {atsScore.skillsDetected.map((skill, i) => (
-                        <span key={i} className="ats-pill detected">{skill}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {atsScore.strengths && atsScore.strengths.length > 0 && (
-                  <div className="ats-detail-card">
-                    <h3>Key Strengths</h3>
-                    <ul className="ats-list-items strengths">
-                      {atsScore.strengths.map((str, i) => (
-                        <li key={i}>{str}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {atsScore.weaknesses && atsScore.weaknesses.length > 0 && (
-                  <div className="ats-detail-card">
-                    <h3>Key Weaknesses</h3>
-                    <ul className="ats-list-items weaknesses">
-                      {atsScore.weaknesses.map((weak, i) => (
-                        <li key={i}>{weak}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {atsScore.recommendations && atsScore.recommendations.length > 0 && (
-                  <div className="ats-detail-card">
-                    <h3>Suggestions</h3>
-                    <ul className="ats-list-items recommendations">
-                      {atsScore.recommendations.map((rec, i) => (
-                        <li key={i}>{rec}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
+      {/* ── ATS Analysis Panel ───────────────────────────────────────────────── */}
+      <div id="ats-panel-anchor" />
+      <AnimatePresence mode="wait">
+        {showATS && (
+          <motion.section
+            className="panel ats-panel-section"
+            key="ats-section"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="section-heading" style={{ marginBottom: "20px" }}>
+              <h2>
+                {viewingVersion !== null
+                  ? `📊 ATS Analysis — Resume v${viewingVersion}`
+                  : `📊 ATS Analysis${atsData?.version ? ` — Resume v${atsData.version}` : ""}`}
+              </h2>
+              {viewingVersion !== null && (
+                <span
+                  className="viewing-badge"
+                  style={{
+                    fontSize: "0.78rem",
+                    padding: "3px 10px",
+                    borderRadius: "20px",
+                    background: "rgba(143,180,255,0.15)",
+                    color: "var(--accent)",
+                    fontWeight: 700,
+                  }}
+                >
+                  View Mode
+                </span>
+              )}
             </div>
-          ) : null}
-        </section>
-      ) : (
-        <p className="empty-state">
-          No resume text yet. You can still generate general interview
-          questions without uploading a resume.
-        </p>
-      )}
+
+            <ATSAnalysisPanel
+              atsData={atsData}
+              isLoading={isAnalyzing && !atsData}
+            />
+          </motion.section>
+        )}
+      </AnimatePresence>
+
+      {/* ── Resume History Panel ─────────────────────────────────────────────── */}
+      <ResumeHistoryPanel
+        onRestoreData={handleRestoreData}
+        refreshTrigger={historyRefreshKey}
+      />
     </main>
   );
 };

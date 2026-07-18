@@ -8,6 +8,8 @@ import { showError } from "../../components/UI/Toast";
 jest.mock("../../services/resumeService", () => ({
   uploadResume: jest.fn(),
   scoreResume: jest.fn(),
+  getActiveResume: jest.fn(() => Promise.resolve({ success: true, resume: null })),
+  getResumeHistory: jest.fn(() => Promise.resolve({ resumes: [], pagination: null })),
 }));
 
 jest.mock("../../components/UI/Toast", () => ({
@@ -48,7 +50,8 @@ test("uploads a valid PDF resume and stores extracted text", async () => {
     score: 74,
     level: "Strong",
   });
-  expect(screen.getByText(/74% ats readiness/i)).toBeInTheDocument();
+  expect(screen.getAllByText(/74/i)[0]).toBeInTheDocument();
+  expect(screen.getByText(/Overall ATS Readiness/i)).toBeInTheDocument();
 });
 
 test("rejects non-PDF files before upload", async () => {

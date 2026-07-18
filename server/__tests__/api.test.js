@@ -27,6 +27,16 @@ jest.mock("../models/AtsReport", () => ({
   deleteMany: jest.fn(),
 }));
 
+jest.mock("../models/Resume", () => ({
+  create: jest.fn(),
+  find: jest.fn(),
+  findOne: jest.fn(),
+  findOneAndUpdate: jest.fn(),
+  countDocuments: jest.fn(),
+  updateMany: jest.fn(),
+  deleteMany: jest.fn(),
+}));
+
 jest.mock("../utils/gemini", () => ({
   generateContent: jest.fn(),
 }));
@@ -39,6 +49,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const Interview = require("../models/Interview");
 const AtsReport = require("../models/AtsReport");
+const Resume = require("../models/Resume");
 const model = require("../utils/gemini");
 const extractResumeText = require("../utils/resumeParser");
 const { app } = require("../server");

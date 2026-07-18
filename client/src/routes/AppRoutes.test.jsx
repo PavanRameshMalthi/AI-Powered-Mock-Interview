@@ -17,6 +17,8 @@ jest.mock("../services/dashboardService", () => ({
 
 jest.mock("../services/resumeService", () => ({
   uploadResume: jest.fn(),
+  getActiveResume: jest.fn(() => Promise.resolve({ success: true, resume: null })),
+  getResumeHistory: jest.fn(() => Promise.resolve({ resumes: [], pagination: null })),
 }));
 
 jest.mock("../services/interviewService", () => ({
@@ -31,7 +33,7 @@ jest.mock("../services/api", () => ({
   post: jest.fn(),
 }));
 
-test("renders public landing route", () => {
+test("renders public landing route", async () => {
   render(
     <MemoryRouter initialEntries={["/"]}>
       <AppRoutes />
@@ -39,7 +41,7 @@ test("renders public landing route", () => {
   );
 
   expect(
-    screen.getByRole("heading", {
+    await screen.findByRole("heading", {
       name: /practice technical interviews with required answers/i,
     })
   ).toBeInTheDocument();

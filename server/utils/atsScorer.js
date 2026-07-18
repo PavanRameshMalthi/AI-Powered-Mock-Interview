@@ -184,10 +184,9 @@ const scoreResumeForRole = ({ resumeText, role = "" }) => {
     return map;
   }, {});
 
-  const matchedKeywords = [...new Set(cataloguedSkills.map((item) => item.label))];
+  const matchedKeywords = [...new Set(cataloguedSkills.map((item) => item.token))];
   const missingKeywords = roleKeywords
-    .filter((kw) => !tokenSet.has(kw) && tokenToLabel[kw])
-    .map((kw) => tokenToLabel[kw])
+    .filter((kw) => !tokenSet.has(kw))
     .slice(0, 8);
 
   const keywordScore = roleKeywords.length
