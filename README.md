@@ -226,6 +226,6 @@ Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
 
 ## ✉️ Support & Author
 - **Author**: Pavan Ramesh Malthi
-- **Email**: pavan.malthi@gmail.com
+- **Email**: pavanrameshmalthi886@gmail.com
 - **LinkedIn**: [linkedin.com/in/pavan-malthi](https://linkedin.com/in/pavan-malthi)
 - **GitHub**: [github.com/PavanRameshMalthi](https://github.com/PavanRameshMalthi)
