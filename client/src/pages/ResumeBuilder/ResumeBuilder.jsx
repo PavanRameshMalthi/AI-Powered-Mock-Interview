@@ -94,6 +94,49 @@ const ResumeBuilder = () => {
   const [activeTab, setActiveTab] = useState("personal");
   const [saveStatus, setSaveStatus] = useState("Saved");
 
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  const templateOptions = [
+    { value: "professional", label: "Professional" },
+    { value: "student", label: "Student" },
+    { value: "modern", label: "Modern" },
+    { value: "minimal", label: "Minimal" },
+    { value: "creative", label: "Creative" },
+    { value: "ats", label: "ATS Format" }
+  ];
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleDropdownKeyDown = (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      setDropdownOpen(!dropdownOpen);
+    } else if (e.key === "Escape") {
+      setDropdownOpen(false);
+    } else if (e.key === "ArrowDown" && dropdownOpen) {
+      e.preventDefault();
+      const currentIndex = templateOptions.findIndex(opt => opt.value === currentResume.template);
+      const nextIndex = (currentIndex + 1) % templateOptions.length;
+      setCurrentResume((prev) => ({ ...prev, template: templateOptions[nextIndex].value }));
+      triggerAutoSave();
+    } else if (e.key === "ArrowUp" && dropdownOpen) {
+      e.preventDefault();
+      const currentIndex = templateOptions.findIndex(opt => opt.value === currentResume.template);
+      const prevIndex = (currentIndex - 1 + templateOptions.length) % templateOptions.length;
+      setCurrentResume((prev) => ({ ...prev, template: templateOptions[prevIndex].value }));
+      triggerAutoSave();
+    }
+  };
+
   // Temporary skill typing inputs
   const [skillInputs, setSkillInputs] = useState({
     programming: "",
@@ -835,23 +878,108 @@ const ResumeBuilder = () => {
           />
         </div>
         <div style={{ display: "flex", gap: "10px" }}>
-          <select
-            className="rb-select"
-            value={currentResume.template}
-            onChange={(e) => {
-              const val = e.target.value;
-              setCurrentResume((prev) => ({ ...prev, template: val }));
-              triggerAutoSave();
-            }}
-            style={{ width: "160px" }}
-          >
-            <option value="professional">Professional</option>
-            <option value="student">Student</option>
-            <option value="modern">Modern</option>
-            <option value="minimal">Minimal</option>
-            <option value="creative">Creative</option>
-            <option value="ats">ATS Format</option>
-          </select>
+          <div ref={dropdownRef} className="relative inline-block text-left" style={{ width: "160px", position: "relative" }}>
+            <button
+              type="button"
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              onKeyDown={handleDropdownKeyDown}
+              className="btn btn-secondary"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                width: "100%",
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                color: "var(--text)",
+                borderRadius: "8px",
+                padding: "8px 16px",
+                fontSize: "0.875rem",
+                fontWeight: "600",
+                cursor: "pointer",
+                transition: "all 0.2s ease"
+              }}
+              aria-haspopup="listbox"
+              aria-expanded={dropdownOpen}
+            >
+              <span>{templateOptions.find(opt => opt.value === currentResume.template)?.label || "Select Template"}</span>
+              <svg
+                className="w-4 h-4 ml-2"
+                style={{
+                  width: "16px",
+                  height: "16px",
+                  transition: "transform 0.2s ease",
+                  transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)"
+                }}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {dropdownOpen && (
+              <ul
+                className="absolute right-0 z-50 w-full mt-2"
+                style={{
+                  position: "absolute",
+                  right: 0,
+                  top: "100%",
+                  width: "100%",
+                  zIndex: 50,
+                  marginTop: "8px",
+                  background: "var(--surface)",
+                  border: "1px solid var(--border)",
+                  borderRadius: "8px",
+                  boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.5)",
+                  overflow: "hidden",
+                  listStyle: "none",
+                  padding: "4px 0",
+                  margin: 0
+                }}
+                role="listbox"
+                aria-label="Resume Templates"
+              >
+                {templateOptions.map((opt) => {
+                  const isSelected = opt.value === currentResume.template;
+                  return (
+                    <li
+                      key={opt.value}
+                      onClick={() => {
+                        setCurrentResume((prev) => ({ ...prev, template: opt.value }));
+                        triggerAutoSave();
+                        setDropdownOpen(false);
+                      }}
+                      style={{
+                        padding: "8px 16px",
+                        fontSize: "0.875rem",
+                        color: isSelected ? "var(--text)" : "var(--muted)",
+                        background: isSelected ? "rgba(99, 102, 241, 0.15)" : "transparent",
+                        cursor: "pointer",
+                        fontWeight: isSelected ? "700" : "400",
+                        transition: "all 0.15s ease",
+                        display: "flex",
+                        alignItems: "center"
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = "var(--primary)";
+                        e.currentTarget.style.color = "#ffffff";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = isSelected ? "rgba(99, 102, 241, 0.15)" : "transparent";
+                        e.currentTarget.style.color = isSelected ? "var(--text)" : "var(--muted)";
+                      }}
+                      role="option"
+                      aria-selected={isSelected}
+                    >
+                      {opt.label}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
           <button className="btn btn-secondary" onClick={handleDownloadPdf}>
             <FaFilePdf /> Download PDF
           </button>
