@@ -16,17 +16,17 @@
 ---
 
 ## 📖 Table of Contents
-1. [Project Overview](#project-overview)
-2. [Workflow Flowchart](#workflow-flowchart)
-3. [Key Features](#key-features)
-4. [Screenshots & Placeholders](#screenshots--placeholders)
-5. [Tech Stack](#tech-stack)
-6. [Folder Structure](#folder-structure)
-7. [Installation & Setup](#installation--setup)
-8. [Environment Variables](#environment-variables)
-9. [Future Roadmap](#future-roadmap)
-10. [Contributing](#contributing)
-11. [License](#license)
+1. [Project Overview](#-project-overview)
+2. [Workflow Flowchart](#-workflow-flowchart)
+3. [Key Features](#-key-features)
+4. [Tech Stack](#-tech-stack)
+5. [Folder Structure](#-folder-structure)
+6. [Installation & Setup](#-installation--setup)
+7. [Environment Variables](#-environment-variables)
+8. [Future Roadmap](#-future-roadmap)
+9. [Contributing](#-contributing)
+10. [License](#-license)
+11. [Support & Author](#-support--author)
 
 ---
 
@@ -92,25 +92,6 @@ Navigating the modern job market requires candidate preparation at multiple step
 - **Dynamic Session Generator**: Dynamic Gemini models create technical, behavioral, and HR questions based on the candidate's chosen target role.
 - **Context-Aware Prompts**: Aligns questions to experiences extracted from the candidate's resume context.
 - **AI Assessment Cards**: Feedback breaks down score, communication strength, technical correctness, and bullet-point suggestions.
-
----
-
-## 🖼️ Screenshots & Placeholders
-
-### 📈 Dashboard Summary
-> *[Placeholder: Dashboard Metrics, Total Practice, Avg Score, Active Resume]*
-
-### 📄 Resume Builder Editor
-> *[Placeholder: Tabbed Resume Input Forms and Live Preview Panel]*
-
-### 📤 Resume Upload & ATS Scanner
-> *[Placeholder: File Drag-Drop Area and Resume Upload Status]*
-
-### 📊 ATS Report View
-> *[Placeholder: ATS score gauge, circular progress, missing keywords, and section checklist]*
-
-### 🎙️ Interview Practice Page
-> *[Placeholder: Voice/text answer submissions, timer, and current question metrics]*
 
 ---
 
@@ -226,6 +207,6 @@ Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
 
 ## ✉️ Support & Author
 - **Author**: Pavan Ramesh Malthi
-- **Email**: pavan.malthi@gmail.com
+- **Email**: pavanrameshmalthi886@gmail.com
 - **LinkedIn**: [linkedin.com/in/pavan-malthi](https://linkedin.com/in/pavan-malthi)
 - **GitHub**: [github.com/PavanRameshMalthi](https://github.com/PavanRameshMalthi)
