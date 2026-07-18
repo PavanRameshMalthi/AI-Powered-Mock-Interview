@@ -37,6 +37,17 @@ jest.mock("../models/Resume", () => ({
   deleteMany: jest.fn(),
 }));
 
+jest.mock("../models/BuilderResume", () => ({
+  create: jest.fn(),
+  find: jest.fn(),
+  findOne: jest.fn(),
+  findOneAndUpdate: jest.fn(),
+  countDocuments: jest.fn(),
+  updateMany: jest.fn(),
+  deleteMany: jest.fn(),
+  aggregate: jest.fn(),
+}));
+
 jest.mock("../utils/gemini", () => ({
   generateContent: jest.fn(),
 }));
@@ -50,6 +61,7 @@ const User = require("../models/User");
 const Interview = require("../models/Interview");
 const AtsReport = require("../models/AtsReport");
 const Resume = require("../models/Resume");
+const BuilderResume = require("../models/BuilderResume");
 const model = require("../utils/gemini");
 const extractResumeText = require("../utils/resumeParser");
 const { app } = require("../server");
@@ -823,5 +835,50 @@ describe("resume upload API", () => {
     expect(response.status).toBe(200);
     expect(response.body.atsScore.level).toEqual(expect.any(String));
     expect(response.body.atsScore.matchedKeywords).toContain("react");
+  });
+});
+
+describe("resume builder API", () => {
+  test("creates a new builder resume", async () => {
+    BuilderResume.create.mockResolvedValue({
+      _id: "builder-1",
+      user: "user-1",
+      name: "My Resume",
+      template: "professional",
+      data: {},
+      atsScore: 0,
+      atsReport: {},
+      isActive: false,
+    });
+
+    const response = await request(app)
+      .post("/api/resume-builder")
+      .set("Authorization", `Bearer ${token()}`)
+      .send({
+        name: "My Resume",
+        template: "professional",
+      });
+
+    expect(response.status).toBe(201);
+    expect(response.body.success).toBe(true);
+    expect(response.body.resume.name).toBe("My Resume");
+  });
+
+  test("gets saved builder resumes", async () => {
+    BuilderResume.find.mockReturnValue({
+      sort: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue([
+          { _id: "builder-1", name: "My Resume", template: "professional" }
+        ])
+      })
+    });
+
+    const response = await request(app)
+      .get("/api/resume-builder")
+      .set("Authorization", `Bearer ${token()}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body.success).toBe(true);
+    expect(response.body.resumes.length).toBe(1);
   });
 });

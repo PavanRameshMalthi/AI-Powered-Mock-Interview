@@ -4,11 +4,12 @@ import { motion } from "framer-motion";
 import {
   FaChartLine, FaFileUpload, FaHistory, FaShieldAlt, FaSignOutAlt,
   FaTrophy, FaCalendarCheck, FaFire, FaCheckCircle, FaTimesCircle,
-  FaLightbulb, FaArrowUp,
+  FaLightbulb, FaArrowUp, FaFileAlt,
 } from "react-icons/fa";
 import ChartPanel from "../../components/UI/ChartPanel";
 import dashboardService from "../../services/dashboardService";
 import authService from "../../services/authService";
+import api from "../../services/api";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ const Dashboard = () => {
   );
   const [summary, setSummary] = useState({ completed: 0, averageScore: 0, recent: [] });
   const [analytics, setAnalytics] = useState(null);
+  const [builderStats, setBuilderStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Also pull last ATS score from localStorage for the resume skill widget
@@ -29,10 +31,12 @@ const Dashboard = () => {
     Promise.all([
       dashboardService.getDashboardSummary(),
       dashboardService.getAnalytics().catch(() => null),
+      api.get("/resume-builder/stats").then((r) => r.data.stats).catch(() => null),
     ])
-      .then(([summaryData, analyticsData]) => {
+      .then(([summaryData, analyticsData, statsData]) => {
         setSummary(summaryData);
         setAnalytics(analyticsData);
+        setBuilderStats(statsData);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -131,6 +135,46 @@ const Dashboard = () => {
           </strong>
         </article>
       </motion.section>
+
+      {/* ── Resume Builder Stats ─────────────────────────────── */}
+      {builderStats && (
+        <motion.section className="panel" variants={itemVariants} style={{ marginBottom: "24px" }}>
+          <div className="dash-sw-heading" style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
+            <FaFileAlt className="dash-sw-icon" style={{ color: "var(--primary)" }} aria-hidden="true" />
+            <h2>Resume Builder Overview</h2>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px" }}>
+            <div style={{ background: "rgba(255,255,255,0.02)", padding: "16px", borderRadius: "10px", border: "1px solid var(--border)" }}>
+              <span style={{ fontSize: "0.85rem", color: "var(--muted)", display: "block" }}>Total Resumes</span>
+              <strong style={{ fontSize: "1.5rem", color: "var(--text)" }}>{builderStats.totalResumes}</strong>
+            </div>
+            <div style={{ background: "rgba(255,255,255,0.02)", padding: "16px", borderRadius: "10px", border: "1px solid var(--border)" }}>
+              <span style={{ fontSize: "0.85rem", color: "var(--muted)", display: "block" }}>Active Resume</span>
+              <strong style={{ fontSize: "1.1rem", color: "var(--primary)", display: "block", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap", marginTop: "4px" }}>
+                {builderStats.activeResume ? builderStats.activeResume.name : "None"}
+              </strong>
+              {builderStats.activeResume && (
+                <span style={{ fontSize: "0.8rem", color: "var(--muted)" }}>ATS Completeness: {builderStats.activeResume.atsScore}%</span>
+              )}
+            </div>
+            <div style={{ background: "rgba(255,255,255,0.02)", padding: "16px", borderRadius: "10px", border: "1px solid var(--border)" }}>
+              <span style={{ fontSize: "0.85rem", color: "var(--muted)", display: "block" }}>Average Completeness</span>
+              <strong style={{ fontSize: "1.5rem", color: "var(--text)" }}>{builderStats.averageAtsScore}%</strong>
+            </div>
+            <div style={{ background: "rgba(255,255,255,0.02)", padding: "16px", borderRadius: "10px", border: "1px solid var(--border)" }}>
+              <span style={{ fontSize: "0.85rem", color: "var(--muted)", display: "block" }}>Latest Resume</span>
+              <strong style={{ fontSize: "1.1rem", color: "var(--text)", display: "block", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap", marginTop: "4px" }}>
+                {builderStats.latestResume ? builderStats.latestResume.name : "None"}
+              </strong>
+              {builderStats.latestResume && (
+                <span style={{ fontSize: "0.75rem", color: "var(--muted)" }}>
+                  Modified: {new Date(builderStats.latestResume.updatedAt).toLocaleDateString()}
+                </span>
+              )}
+            </div>
+          </div>
+        </motion.section>
+      )}
 
       {/* ── Strong & Weak Areas ───────────────────────────────── */}
       <motion.section className="dash-sw-section" variants={itemVariants}>

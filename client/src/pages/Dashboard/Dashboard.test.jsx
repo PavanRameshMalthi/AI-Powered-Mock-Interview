@@ -12,6 +12,11 @@ jest.mock("../../services/authService", () => ({
   logout: jest.fn(() => Promise.resolve({ success: true })),
 }));
 
+jest.mock("../../services/api", () => ({
+  get: jest.fn(() => Promise.resolve({ data: { stats: null } })),
+  post: jest.fn(),
+}));
+
 test("renders dashboard summary and actions", async () => {
   localStorage.setItem(
     "user",

@@ -11,6 +11,7 @@ const rateLimit = require("express-rate-limit");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const resumeRoutes = require("./routes/resumeRoutes");
+const builderRoutes = require("./routes/builderRoutes");
 const interviewRoutes = require("./routes/interviewRoutes");
 const evaluationRoutes = require("./routes/evaluationRoutes");
 const historyRoutes = require("./routes/historyRoutes");
@@ -112,6 +113,7 @@ app.use(
 
 app.use("/api/auth", authRoutes);
 app.use("/api/resume", resumeRoutes);
+app.use("/api/resume-builder", builderRoutes);
 app.use("/api/interview", interviewRoutes);
 app.use("/api/interviews", historyRoutes);
 app.use("/api/evaluation", evaluationRoutes);

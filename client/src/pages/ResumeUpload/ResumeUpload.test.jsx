@@ -12,6 +12,11 @@ jest.mock("../../services/resumeService", () => ({
   getResumeHistory: jest.fn(() => Promise.resolve({ resumes: [], pagination: null })),
 }));
 
+jest.mock("../../services/api", () => ({
+  get: jest.fn(() => Promise.resolve({ data: { resumes: [] } })),
+  post: jest.fn(),
+}));
+
 jest.mock("../../components/UI/Toast", () => ({
   showLoading: jest.fn(() => "toast-id"),
   dismissToast: jest.fn(),

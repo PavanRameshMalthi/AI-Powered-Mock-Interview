@@ -12,7 +12,7 @@ const ChartPanel = ({ labels, values, type = "line", label = "Score" }) => {
 
     import("chart.js/auto")
       .then(({ default: Chart }) => {
-        if (process.env.NODE_ENV === 'test') {
+        if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') {
           // In Jest/JSdom environment, Canvas context is not reliable; skip chart creation.
           setAvailable(false);
           return;

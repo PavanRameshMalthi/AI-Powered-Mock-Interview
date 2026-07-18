@@ -30,6 +30,7 @@ jest.mock("../services/historyService", () => ({
 }));
 
 jest.mock("../services/api", () => ({
+  get: jest.fn(() => Promise.resolve({ data: { stats: null } })),
   post: jest.fn(),
 }));
 

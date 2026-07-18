@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { FaFileAlt, FaTimes } from "react-icons/fa";
 import {
   dismissToast,
   showError,
@@ -8,6 +9,7 @@ import {
   showSuccess,
 } from "../../components/UI/Toast";
 import resumeService from "../../services/resumeService";
+import api from "../../services/api";
 import ATSAnalysisPanel from "./components/ATSAnalysisPanel";
 import ResumeHistoryPanel from "./components/ResumeHistoryPanel";
 
@@ -37,6 +39,71 @@ const ResumeUpload = () => {
 
   // For viewing a history card's ATS data (view-only mode)
   const [viewingVersion, setViewingVersion] = useState(null);
+
+  // Modal and loading states for Saved Resumes list
+  const [showBuilderModal, setShowBuilderModal] = useState(false);
+  const [builderResumes, setBuilderResumes] = useState([]);
+  const [loadingBuilder, setLoadingBuilder] = useState(false);
+
+  const openBuilderModal = async () => {
+    setShowBuilderModal(true);
+    setLoadingBuilder(true);
+    try {
+      const response = await api.get("/resume-builder");
+      setBuilderResumes(response.data.resumes || []);
+    } catch (error) {
+      showError("Failed to load saved builder resumes.");
+    } finally {
+      setLoadingBuilder(false);
+    }
+  };
+
+  const handleSelectBuilderResume = async (resumeId) => {
+    setShowBuilderModal(false);
+    setIsUploading(true);
+    setUploadProgress(20);
+    const toastId = showLoading("Synchronizing builder resume...");
+
+    try {
+      setUploadProgress(50);
+      const response = await api.post(`/resume-builder/${resumeId}/set-active`);
+      setUploadProgress(80);
+
+      const activeAtsData = {
+        atsScore:     response.data.atsScore,
+        atsAnalysis:  response.data.atsAnalysis,
+        sectionsFound: response.data.sectionsFound,
+        aiSuggestions: response.data.aiSuggestions,
+        resumeStats:  response.data.resumeStats,
+        resumeId:     response.data.resumeId,
+        version:      response.data.version,
+        resumeName:   response.data.resumeName,
+      };
+
+      setAtsData(activeAtsData);
+
+      // Persist locally for compatibility
+      localStorage.setItem("atsData", JSON.stringify(activeAtsData));
+      if (response.data.extractedText) {
+        localStorage.setItem("resumeText", response.data.extractedText);
+      }
+      if (response.data.atsScore) {
+        localStorage.setItem("atsScore", JSON.stringify(response.data.atsScore));
+      }
+      localStorage.setItem("activeResumeId", response.data.resumeId);
+
+      setUploadProgress(100);
+      dismissToast(toastId);
+      showSuccess("Builder resume synced & analyzed successfully!");
+      setHistoryRefreshKey((prev) => prev + 1); // reload history panel list
+    } catch (error) {
+      dismissToast(toastId);
+      showError("Failed to synchronize builder resume.");
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
+  };
 
   // Fetch active resume from MongoDB on mount to ensure synchronization
   useEffect(() => {
@@ -293,7 +360,7 @@ const ResumeUpload = () => {
         </AnimatePresence>
 
         {/* Action buttons */}
-        <div className="button-row" style={{ marginTop: "20px" }}>
+        <div className="button-row" style={{ marginTop: "20px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
           <button
             className="btn btn-primary"
             onClick={handleUpload}
@@ -308,6 +375,14 @@ const ResumeUpload = () => {
             ) : (
               "Upload resume"
             )}
+          </button>
+          <button
+            className="btn btn-secondary"
+            onClick={openBuilderModal}
+            disabled={isUploading}
+            style={{ display: "flex", alignItems: "center", gap: "8px" }}
+          >
+            <FaFileAlt /> Use Resume Builder Resume
           </button>
           <Link
             className="btn btn-secondary"
@@ -370,6 +445,73 @@ const ResumeUpload = () => {
         onRestoreData={handleRestoreData}
         refreshTrigger={historyRefreshKey}
       />
+
+      {/* ── Builder Resumes Modal Overlay ─────────────────────────────── */}
+      <AnimatePresence>
+        {showBuilderModal && (
+          <div className="sidebar-backdrop" style={{ display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50 }}>
+            <motion.div
+              className="panel"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              style={{ width: "min(500px, 90%)", maxHeight: "80vh", overflowY: "auto", position: "relative" }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px", borderBottom: "1px solid var(--border)", paddingBottom: "10px" }}>
+                <h2 style={{ margin: 0, fontSize: "1.25rem" }}>Select Builder Resume</h2>
+                <button
+                  onClick={() => setShowBuilderModal(false)}
+                  style={{ background: "transparent", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: "1.1rem" }}
+                  aria-label="Close modal"
+                >
+                  <FaTimes />
+                </button>
+              </div>
+
+              {loadingBuilder ? (
+                <div style={{ textAlign: "center", padding: "20px", color: "var(--muted)" }}>
+                  Loading saved resumes...
+                </div>
+              ) : builderResumes.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "20px", color: "var(--muted)" }}>
+                  No saved resumes found in Resume Builder. Go to Resume Builder page to create one.
+                </div>
+              ) : (
+                <div style={{ display: "grid", gap: "12px" }}>
+                  {builderResumes.map((res) => (
+                    <div
+                      key={res._id}
+                      style={{
+                        padding: "14px",
+                        border: "1px solid var(--border)",
+                        borderRadius: "8px",
+                        background: "rgba(255,255,255,0.01)",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <div>
+                        <strong style={{ display: "block" }}>{res.name}</strong>
+                        <span className="muted" style={{ fontSize: "0.8rem" }}>
+                          Template: {res.template} · Score: {res.atsScore}%
+                        </span>
+                      </div>
+                      <button
+                        className="btn btn-secondary"
+                        onClick={() => handleSelectBuilderResume(res._id)}
+                        style={{ padding: "6px 12px", fontSize: "0.85rem" }}
+                      >
+                        Select
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </main>
   );
 };
