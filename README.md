@@ -15,22 +15,23 @@
 
 ---
 
-## 📖 Table of Contents
-1. [Project Overview](#-project-overview)
-2. [Workflow Flowchart](#-workflow-flowchart)
-3. [Key Features](#-key-features)
-4. [Tech Stack](#-tech-stack)
-5. [Folder Structure](#-folder-structure)
-6. [Installation & Setup](#-installation--setup)
-7. [Environment Variables](#-environment-variables)
-8. [Future Roadmap](#-future-roadmap)
-9. [Contributing](#-contributing)
-10. [License](#-license)
-11. [Support & Author](#-support--author)
+## Table of Contents
+1. [Overview](#overview)
+2. [Features](#features)
+3. [Technology Stack](#technology-stack)
+4. [Installation](#installation)
+5. [Environment Variables](#environment-variables)
+6. [Project Structure](#project-structure)
+7. [Workflow](#workflow)
+8. [Roadmap](#roadmap)
+9. [Contributing](#contributing)
+10. [License](#license)
+11. [Support](#support)
+12. [Author](#author)
 
 ---
 
-## 🎯 Project Overview
+## Overview
 Navigating the modern job market requires candidate preparation at multiple steps: crafting an ATS-optimized resume, highlighting core skills, and practicing interview communication. This platform resolves these hurdles by consolidating a resume builder, automated ATS reporting, and dynamic AI interview generation into a unified, responsive career preparation workspace.
 
 ### Core Problems Solved
@@ -40,7 +41,7 @@ Navigating the modern job market requires candidate preparation at multiple step
 
 ---
 
-## 🔄 Workflow Flowchart
+## Workflow
 ```
     [ User Registration & Login ]
                  │
@@ -65,37 +66,37 @@ Navigating the modern job market requires candidate preparation at multiple step
 
 ---
 
-## ✨ Key Features
+## Features
 
-### 🔐 Authentication & Security
+### Authentication & Security
 - **Secure Register/Login**: Salted password hashing via BCrypt.
 - **JWT Middleware**: Dual JWT sessions (Access Token headers & Cookie-based Refresh tokens) with automatic client-side token refresh.
 - **Rate Limiting**: Request caps on login paths (10 queries/15m) and endpoints to protect against brute-force attacks.
 
-### 📄 Resume Builder
+### Resume Builder
 - **Template Styles**: Choose from Professional, Student, Modern, Minimal, Creative, and ATS layouts.
 - **Interactive Forms**: Modular form tabs for personal info, experience, education, skills, and projects.
 - **PDF Exporter**: Live Client-side rendering and high-quality PDF downloads.
 - **Active State Sync**: Mark a resume as Active to automatically build plain-text summaries, run ATS analytics, and populate interview setups.
 
-### 📤 Resume Upload & OCR
+### Resume Upload & OCR
 - **Multi-Format Uploads**: Support for PDF and DOCX documents with size verification limits (5MB).
 - **Extracted Text Parsing**: Extends OCR scanning to digest experiences, achievements, and keywords.
 - **Version History**: Saves multiple resume variants as unique database versions instead of overwriting previous records.
 
-### 📊 ATS Analysis Engine
+### ATS Analysis Engine
 - **Automated Score Gauge**: Shows formatting warnings, keyword counts, and critical recommendations.
 - **Section Detection**: Scans structure to find missing categories (e.g. Summary, Experience, Projects).
 - **Skill Extraction**: Merges resume parsed categories to index candidate strong and weak areas.
 
-### 🎙️ AI Mock Interview
+### AI Mock Interview
 - **Dynamic Session Generator**: Dynamic Gemini models create technical, behavioral, and HR questions based on the candidate's chosen target role.
 - **Context-Aware Prompts**: Aligns questions to experiences extracted from the candidate's resume context.
 - **AI Assessment Cards**: Feedback breaks down score, communication strength, technical correctness, and bullet-point suggestions.
 
 ---
 
-## 🛠️ Tech Stack
+## Technology Stack
 
 | Frontend | Backend | Database | AI Integration |
 | :--- | :--- | :--- | :--- |
@@ -105,7 +106,7 @@ Navigating the modern job market requires candidate preparation at multiple step
 
 ---
 
-## 📂 Folder Structure
+## Project Structure
 
 ```
 AI-Mock-Interview/
@@ -130,21 +131,14 @@ AI-Mock-Interview/
 
 ---
 
-## 🚀 Installation & Setup
-
-### 1. Prerequisites
-- **Node.js**: Installed (version 20+ recommended).
-- **MongoDB**: Access to local instance or MongoDB Atlas.
-- **Google Gemini API Key**: Acquired from Google AI Studio.
-
-### 2. Step-by-Step Installation
+## Installation
 Clone the repository:
 ```bash
 git clone https://github.com/your-username/ai-mock-interview.git
 cd ai-mock-interview
 ```
 
-#### Backend Setup:
+### Backend Setup:
 ```bash
 cd server
 npm install
@@ -152,7 +146,7 @@ npm install
 npm run dev
 ```
 
-#### Frontend Setup:
+### Frontend Setup:
 ```bash
 cd ../client
 npm install
@@ -162,7 +156,7 @@ npm run dev
 
 ---
 
-## ⚙️ Environment Variables
+## Environment Variables
 
 Create files named `.env` in both client and server directories:
 
@@ -183,7 +177,7 @@ VITE_API_URL=http://localhost:5000/api
 
 ---
 
-## 🗺️ Future Roadmap
+## Roadmap
 - [ ] **ATS Resume Matcher**: Paste job descriptions to calculate contextual matching percentages.
 - [ ] **Voice-to-Text Speech Practice**: Audio answer transcript inputs.
 - [ ] **Coding Interview Console**: Interactive workspace for algorithms.
@@ -191,7 +185,7 @@ VITE_API_URL=http://localhost:5000/api
 
 ---
 
-## 🤝 Contributing
+## Contributing
 1. Fork the Project.
 2. Create a Feature Branch (`git checkout -b feature/NewFeature`).
 3. Commit Changes (`git commit -m 'Add NewFeature'`).
@@ -200,12 +194,20 @@ VITE_API_URL=http://localhost:5000/api
 
 ---
 
-## 📄 License
+## License
 Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
 
 ---
 
-## ✉️ Support & Author
+## Support
+If you like this project, please consider:
+- Starring the repository.
+- Forking it to make your own custom modifications.
+- Submitting pull requests or raising feature issues.
+
+---
+
+## Author
 - **Author**: Pavan Ramesh Malthi
 - **Email**: pavanrameshmalthi886@gmail.com
 - **LinkedIn**: [linkedin.com/in/pavan-malthi](https://linkedin.com/in/pavan-malthi)
