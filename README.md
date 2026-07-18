@@ -210,5 +210,5 @@ If you like this project, please consider:
 ## Author
 - **Author**: Pavan Ramesh Malthi
 - **Email**: pavanrameshmalthi886@gmail.com
-- **LinkedIn**: [linkedin.com/in/pavan-malthi](https://linkedin.com/in/pavan-malthi)
+- **LinkedIn**: [linkedin.com/in/pavan-ramesh-malthi](https://www.linkedin.com/in/pavan-ramesh-malthi/)
 - **GitHub**: [github.com/PavanRameshMalthi](https://github.com/PavanRameshMalthi)
