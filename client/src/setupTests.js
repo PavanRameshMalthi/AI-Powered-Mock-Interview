@@ -35,3 +35,18 @@ HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
   rotate: jest.fn(),
   scale: jest.fn(),
 }));
+
+jest.mock("lucide-react", () => {
+  return new Proxy(
+    {},
+    {
+      get: (target, property) => {
+        if (property === "__esModule") return true;
+        return (props) => require("react").createElement("svg", {
+          "data-testid": `lucide-${property.toLowerCase()}`,
+          ...props
+        });
+      },
+    }
+  );
+});

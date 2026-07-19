@@ -23,9 +23,6 @@ const interviewSchema = new mongoose.Schema(
       completeness: Number,
       overall: Number,
       feedback: String,
-      strengths: [String],
-      weaknesses: [String],
-      suggestions: [String],
       studyTopics: [String],
       questionScores: [
         {
@@ -49,9 +46,6 @@ const interviewSchema = new mongoose.Schema(
       ],
       improvementTracker: {
         mistakesMade: [String],
-        weakTopics: [String],
-        learningRecommendations: [String],
-        areasToImprove: [String],
       },
     },
     atsScore: {
@@ -66,7 +60,6 @@ const interviewSchema = new mongoose.Schema(
         education: Number,
         projects: Number,
       },
-      recommendations: [String],
     },
     resumeText: String,
     deletedAt: {

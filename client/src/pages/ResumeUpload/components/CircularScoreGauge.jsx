@@ -2,10 +2,10 @@ import { useEffect, useRef } from "react";
 import { motion, useInView, useMotionValue, useSpring } from "framer-motion";
 
 const getScoreColor = (score) => {
-  if (score >= 90) return { stroke: "#22c55e", text: "#22c55e", label: "Excellent" };
-  if (score >= 75) return { stroke: "#3dd6bd", text: "#3dd6bd", label: "Strong" };
-  if (score >= 60) return { stroke: "#f97316", text: "#f97316", label: "Moderate" };
-  return { stroke: "#fb7185", text: "#fb7185", label: "Needs Work" };
+  if (score >= 90) return { stroke: "#22C55E", text: "#22C55E", label: "Excellent" };
+  if (score >= 75) return { stroke: "#6366F1", text: "#6366F1", label: "Strong" };
+  if (score >= 60) return { stroke: "#F59E0B", text: "#F59E0B", label: "Moderate" };
+  return { stroke: "#EF4444", text: "#EF4444", label: "Needs Work" };
 };
 
 const CircularScoreGauge = ({ score = 0, size = 180, strokeWidth = 14 }) => {
@@ -40,7 +40,7 @@ const CircularScoreGauge = ({ score = 0, size = 180, strokeWidth = 14 }) => {
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#223044"
+          stroke="rgba(255, 255, 255, 0.05)"
           strokeWidth={strokeWidth}
         />
         {/* Animated progress arc */}

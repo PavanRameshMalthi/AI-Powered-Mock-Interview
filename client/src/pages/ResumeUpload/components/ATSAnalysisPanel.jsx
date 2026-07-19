@@ -86,10 +86,10 @@ const ATSAnalysisPanel = ({ atsData, isLoading }) => {
                 Overall ATS Readiness — <strong>{atsScore.level || "Analyzed"}</strong>
               </p>
               <div className="ats-score-legend">
-                <span className="legend-dot" style={{ background: "#22c55e" }} /> 90–100 Excellent
-                <span className="legend-dot" style={{ background: "#3dd6bd" }} /> 75–89 Strong
-                <span className="legend-dot" style={{ background: "#f97316" }} /> 60–74 Moderate
-                <span className="legend-dot" style={{ background: "#fb7185" }} /> &lt;60 Needs Work
+                <span className="legend-dot" style={{ background: "#22C55E" }} /> 90–100 Excellent
+                <span className="legend-dot" style={{ background: "#6366F1" }} /> 75–89 Strong
+                <span className="legend-dot" style={{ background: "#F59E0B" }} /> 60–74 Moderate
+                <span className="legend-dot" style={{ background: "#EF4444" }} /> &lt;60 Needs Work
               </div>
             </div>
           </div>

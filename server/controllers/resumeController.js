@@ -77,14 +77,12 @@ const generateAISuggestions = async (resumeText, atsScore, sections) => {
   try {
     const skillsList = (atsScore.skillsDetected || []).slice(0, 10).join(", ");
     const missingList = (atsScore.missingKeywords || []).slice(0, 6).join(", ");
-    const weaknesses = (atsScore.weaknesses || []).slice(0, 4).join(", ");
 
     const prompt = `You are an expert resume coach and ATS optimization specialist. Analyze this resume and provide exactly 8 actionable improvement suggestions.
 
 Resume ATS Score: ${atsScore.score}/100 (${atsScore.level})
 Skills Detected: ${skillsList || "None detected"}
 Missing Keywords: ${missingList || "None"}
-Weak Areas: ${weaknesses || "None identified"}
 Sections Found: ${Object.entries(sections).filter(([,v]) => v).map(([k]) => k).join(", ") || "None"}
 Sections Missing: ${Object.entries(sections).filter(([,v]) => !v).map(([k]) => k).join(", ") || "None"}
 

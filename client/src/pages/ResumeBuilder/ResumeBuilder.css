@@ -89,24 +89,26 @@
 
 .rb-sidebar-nav {
   position: sticky;
-  top: 100px;
+  top: 90px;
   display: grid;
-  gap: 8px;
-  background: var(--surface);
+  gap: 6px;
+  background: rgba(30, 41, 59, 0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 12px;
+  border-radius: 16px;
+  padding: 16px 12px;
 }
 
 .rb-nav-link {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px;
-  border-radius: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
   color: var(--muted);
   text-decoration: none;
-  font-weight: 700;
+  font-weight: 600;
   background: transparent;
   border: none;
   cursor: pointer;
@@ -120,9 +122,9 @@
 }
 
 .rb-nav-link.active {
-  color: #ffffff;
-  background: var(--primary);
-  color: #080b12;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.18) 0%, rgba(139, 92, 246, 0.18) 100%);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  color: var(--text);
 }
 
 .rb-form-pane {
@@ -147,10 +149,10 @@
 .rb-select,
 .rb-textarea {
   width: 100%;
-  padding: 10px 12px;
-  border-radius: 8px;
+  padding: 12px 14px;
+  border-radius: 12px;
   border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(15, 23, 42, 0.6);
   color: var(--text);
   outline: none;
   transition: all 0.2s ease;
@@ -160,7 +162,7 @@
 .rb-select:focus,
 .rb-textarea:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(61, 214, 189, 0.15);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.24);
 }
 
 .rb-textarea {

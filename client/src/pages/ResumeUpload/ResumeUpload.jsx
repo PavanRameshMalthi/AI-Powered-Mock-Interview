@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaFileAlt, FaTimes } from "react-icons/fa";
+import { FileText, X, UploadCloud, CheckCircle2 } from "lucide-react";
 import {
   dismissToast,
   showError,
@@ -302,30 +302,47 @@ const ResumeUpload = () => {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
+        style={{ padding: "28px" }}
       >
         <label
           className={`file-drop enhanced-drop ${file ? "has-file" : ""}`}
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleDrop}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "40px 20px",
+            border: "2px dashed var(--border)",
+            borderRadius: "16px",
+            background: "rgba(255, 255, 255, 0.01)",
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+            position: "relative"
+          }}
         >
           <input
             accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             onChange={handleFileChange}
             type="file"
             disabled={isUploading}
+            style={{ display: "none" }}
           />
           <span style={{ display: "none" }}>Choose a PDF or DOCX resume</span>
-          <div className="drop-zone-content">
-            <span className="drop-icon">{file ? "📄" : "☁️"}</span>
-            <span className="drop-text">
-              {file ? file.name : "Drop your resume here or click to browse"}
+          <div className="drop-zone-content" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", textAlign: "center" }}>
+            <div style={{ background: "rgba(99, 102, 241, 0.1)", color: "var(--primary)", padding: "14px", borderRadius: "50%", display: "flex" }}>
+              <UploadCloud size={32} />
+            </div>
+            <span style={{ fontSize: "1rem", fontWeight: 600, color: "var(--text)" }}>
+              {file ? file.name : "Drag & drop your resume here or browse files"}
             </span>
             {!file && (
-              <span className="drop-hint">PDF or DOCX · Max 5 MB</span>
+              <span style={{ fontSize: "0.8rem", color: "var(--muted)" }}>PDF or DOCX · Max 5 MB</span>
             )}
             {file && (
-              <span className="drop-hint">
-                {(file.size / 1024).toFixed(1)} KB · Ready to upload
+              <span style={{ fontSize: "0.8rem", color: "var(--primary)", fontWeight: 600 }}>
+                {(file.size / 1024).toFixed(1)} KB · Ready to analyze
               </span>
             )}
           </div>
@@ -339,20 +356,22 @@ const ResumeUpload = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
+              style={{ marginTop: "20px" }}
             >
-              <div className="spinner-row">
-                <div className="loading-spinner" />
+              <div className="spinner-row" style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px", fontSize: "0.88rem" }}>
+                <div className="loading-spinner" style={{ width: "16px", height: "16px", border: "2px solid rgba(255,255,255,0.1)", borderTopColor: "var(--primary)", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
                 <span>
                   {uploadProgress < 100
                     ? `Uploading... ${uploadProgress}%`
                     : "Running ATS analysis & AI suggestions..."}
                 </span>
               </div>
-              <div className="upload-progress-container">
+              <div className="upload-progress-container" style={{ height: "6px", background: "rgba(255,255,255,0.05)", borderRadius: "10px", overflow: "hidden" }}>
                 <motion.div
                   className="upload-progress-bar"
                   animate={{ width: `${uploadProgress}%` }}
                   transition={{ ease: "easeOut" }}
+                  style={{ height: "100%", background: "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)", borderRadius: "10px" }}
                 />
               </div>
             </motion.div>
@@ -360,29 +379,33 @@ const ResumeUpload = () => {
         </AnimatePresence>
 
         {/* Action buttons */}
-        <div className="button-row" style={{ marginTop: "20px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
+        <div className="button-row" style={{ marginTop: "24px", display: "flex", gap: "12px", flexWrap: "wrap" }}>
           <button
             className="btn btn-primary"
             onClick={handleUpload}
             disabled={isUploading}
             id="upload-resume-btn"
+            style={{
+              background: "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)",
+              color: "#fff",
+              fontWeight: 600,
+              fontSize: "0.88rem",
+              padding: "10px 20px",
+              borderRadius: "10px",
+              cursor: "pointer",
+              border: "none",
+              height: "44px"
+            }}
           >
-            {isUploading ? (
-              <>
-                <span className="btn-spinner" />
-                Analyzing...
-              </>
-            ) : (
-              "Upload resume"
-            )}
+            {isUploading ? "Analyzing..." : "Upload Resume"}
           </button>
           <button
             className="btn btn-secondary"
             onClick={openBuilderModal}
             disabled={isUploading}
-            style={{ display: "flex", alignItems: "center", gap: "8px" }}
+            style={{ display: "flex", alignItems: "center", gap: "8px", height: "44px", borderRadius: "10px" }}
           >
-            <FaFileAlt /> Use Resume Builder Resume
+            <FileText size={16} /> Use Resume Builder Resume
           </button>
           <Link
             className="btn btn-secondary"
@@ -390,6 +413,11 @@ const ResumeUpload = () => {
             style={{
               pointerEvents: isUploading ? "none" : "auto",
               opacity: isUploading ? 0.6 : 1,
+              display: "flex",
+              alignItems: "center",
+              height: "44px",
+              borderRadius: "10px",
+              textDecoration: "none"
             }}
           >
             Continue to Interview →
@@ -449,22 +477,37 @@ const ResumeUpload = () => {
       {/* ── Builder Resumes Modal Overlay ─────────────────────────────── */}
       <AnimatePresence>
         {showBuilderModal && (
-          <div className="sidebar-backdrop" style={{ display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50 }}>
+          <div 
+            style={{ 
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100vw",
+              height: "100vh",
+              background: "rgba(0,0,0,0.6)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+              display: "flex", 
+              alignItems: "center", 
+              justifyContent: "center", 
+              zIndex: 100 
+            }}
+          >
             <motion.div
               className="panel"
-              initial={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              style={{ width: "min(500px, 90%)", maxHeight: "80vh", overflowY: "auto", position: "relative" }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              style={{ width: "min(500px, 90%)", maxHeight: "80vh", overflowY: "auto", position: "relative", padding: "24px" }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px", borderBottom: "1px solid var(--border)", paddingBottom: "10px" }}>
-                <h2 style={{ margin: 0, fontSize: "1.25rem" }}>Select Builder Resume</h2>
+                <h2 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 700 }}>Select Builder Resume</h2>
                 <button
                   onClick={() => setShowBuilderModal(false)}
                   style={{ background: "transparent", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: "1.1rem" }}
                   aria-label="Close modal"
                 >
-                  <FaTimes />
+                  <X size={18} />
                 </button>
               </div>
 

@@ -166,28 +166,18 @@ const mergeEvaluations = (geminiEvaluation, localEvaluation) => {
 
 const enrichEvaluation = (evaluation) => {
   const questionScores = evaluation.questionScores || [];
-  const matched = questionScores.flatMap((item) => item.whatWasCorrect || []);
   const missing = questionScores.flatMap((item) => item.whatWasIncorrect || []);
   const weakQuestions = questionScores.filter((item) => item.score < 70);
-  const strengths = uniqueStrings(matched).slice(0, 6);
   const weaknesses = uniqueStrings(missing).slice(0, 6);
   const studyTopics = weaknesses.length
     ? weaknesses
     : ["role fundamentals", "structured examples", "technical tradeoffs"];
-  const suggestions = [
-    "Answer each question directly before adding context.",
-    "Use one concrete project example with measurable impact.",
-    "Close with tradeoffs, testing, or production considerations.",
-  ];
 
   return {
     ...evaluation,
     confidence: clampScore(evaluation.communication),
     relevance: clampScore(evaluation.problemSolving),
     completeness: clampScore((evaluation.technical + evaluation.communication) / 2),
-    strengths: strengths.length ? strengths : ["clearer structure"],
-    weaknesses: weaknesses.length ? weaknesses : ["deeper role-specific detail"],
-    suggestions,
     studyTopics,
     questionScores: questionScores.map((item) => {
       const qStudyTopics = uniqueStrings([...(item.suggestedTopicsToLearn || []), ...(item.whatWasIncorrect || [])]).slice(0, 4);
@@ -224,9 +214,6 @@ const enrichEvaluation = (evaluation) => {
     }),
     improvementTracker: {
       mistakesMade: weakQuestions.map((item) => item.feedback).slice(0, 5),
-      weakTopics: studyTopics,
-      learningRecommendations: suggestions,
-      areasToImprove: weaknesses,
     },
   };
 };

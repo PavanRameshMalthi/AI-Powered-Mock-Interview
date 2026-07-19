@@ -819,7 +819,7 @@ const ResumeBuilder = () => {
           ) : (
             <div className="rb-history-grid">
               {resumes.map((res) => (
-                <div key={res._id} className={`card rb-card ${res.isActive ? "rb-card.active-resume-card" : ""}`} style={{ border: res.isActive ? "2px solid var(--primary)" : "1px solid var(--border)" }}>
+                <div key={res._id} className={`card rb-card ${res.isActive ? "active-resume-card" : ""}`} style={{ border: res.isActive ? "2px solid var(--primary)" : "1px solid var(--border)" }}>
                   {res.isActive && <span className="rb-card-active-badge">Active</span>}
                   <div>
                     <h3 style={{ fontSize: "1.2rem", margin: 0 }}>{res.name}</h3>

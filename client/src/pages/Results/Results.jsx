@@ -81,26 +81,11 @@ const Results = () => {
     if (result.atsScore) {
       doc.text(`ATS Score: ${result.atsScore.score}/100 (${result.atsScore.level})`, 20, y);
       y += 12;
-      doc.text(`Weak Areas: ${(result.atsScore.weaknesses || result.atsScore.missingKeywords || []).slice(0, 4).join(", ") || "N/A"}`, 20, y, { maxWidth: 170 });
-      y += 18;
-      doc.text(`Strong Areas: ${(result.atsScore.strengths || result.atsScore.matchedKeywords || []).slice(0, 4).join(", ") || "N/A"}`, 20, y, { maxWidth: 170 });
-      y += 18;
     }
     doc.text("AI Feedback:", 20, y);
     y += 10;
     doc.text(result.feedback || "No feedback provided.", 20, y, { maxWidth: 170 });
     y += 34;
-    doc.text("Suggestions:", 20, y);
-    y += 10;
-    doc.text(
-      (result.suggestions || result.atsScore?.recommendations || [
-        "Practice concise STAR stories with measurable outcomes.",
-        "Add stronger role-specific project examples.",
-      ]).join(" "),
-      20,
-      y,
-      { maxWidth: 170 }
-    );
     (result.questionScores || []).slice(0, 3).forEach((item, index) => {
       y += 24;
       doc.text(`Q${index + 1}: ${item.question}`, 20, y, { maxWidth: 170 });
@@ -401,90 +386,6 @@ const Results = () => {
             </div>
           )}
 
-          {/* ── Strong / Weak two-column grid ── */}
-          <div className="ats-sw-grid">
-            {/* Strong Areas */}
-            <div className="ats-sw-col ats-strong-col">
-              <div className="ats-sw-heading">
-                <span className="ats-sw-icon ats-strong-icon">✓</span>
-                <h3>Strong Areas</h3>
-              </div>
-              {atsScore.strongAreas?.length ? (
-                <ul className="ats-area-list">
-                  {atsScore.strongAreas.map((item, idx) => (
-                    <li key={idx} className="ats-area-item ats-strong-item">
-                      <span className="ats-area-check">✓</span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="muted ats-empty-note">Complete an interview to identify your strengths.</p>
-              )}
-            </div>
-
-            {/* Weak Areas */}
-            <div className="ats-sw-col ats-weak-col">
-              <div className="ats-sw-heading">
-                <span className="ats-sw-icon ats-weak-icon">⚠</span>
-                <h3>Weak Areas</h3>
-              </div>
-              {atsScore.weakAreas?.length ? (
-                <ul className="ats-area-list">
-                  {atsScore.weakAreas.map((item, idx) => (
-                    <li key={idx} className="ats-area-item ats-weak-item">
-                      <span className="ats-area-warn">⚠</span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="muted ats-empty-note">No significant gaps detected.</p>
-              )}
-            </div>
-          </div>
-          <div className="ats-sw-grid">
-            {/* Strong Areas */}
-            <div className="ats-sw-col ats-strong-col">
-              <div className="ats-sw-heading">
-                <span className="ats-sw-icon ats-strong-icon">✓</span>
-                <h3>Strong Areas</h3>
-              </div>
-              {atsScore.strongAreas?.length ? (
-                <ul className="ats-area-list">
-                  {atsScore.strongAreas.map((item, idx) => (
-                    <li key={idx} className="ats-area-item ats-strong-item">
-                      <span className="ats-area-check">✓</span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="muted ats-empty-note">Complete an interview to identify your strengths.</p>
-              )}
-            </div>
-
-            {/* Weak Areas */}
-            <div className="ats-sw-col ats-weak-col">
-              <div className="ats-sw-heading">
-                <span className="ats-sw-icon ats-weak-icon">⚠</span>
-                <h3>Weak Areas</h3>
-              </div>
-              {atsScore.weakAreas?.length ? (
-                <ul className="ats-area-list">
-                  {atsScore.weakAreas.map((item, idx) => (
-                    <li key={idx} className="ats-area-item ats-weak-item">
-                      <span className="ats-area-warn">⚠</span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="muted ats-empty-note">No significant gaps detected.</p>
-              )}
-            </div>
-          </div>
-
           {/* ── Skill Gap Analysis ── */}
           {(atsScore.skillGapAnalysis?.detected?.length || atsScore.skillGapAnalysis?.recommended?.length) ? (
             <div className="ats-gap-section">
@@ -527,18 +428,6 @@ const Results = () => {
               </div>
             </div>
           </div>
-
-          {/* ── Improvement Recommendations ── */}
-          {atsScore.recommendations?.length ? (
-            <div className="ats-recommendations">
-              <h3>Improvement Recommendations</h3>
-              <ul className="recommendation-list">
-                {atsScore.recommendations.map((item, i) => (
-                  <li key={i}>{item}</li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
         </section>
       ) : null}
     </main>

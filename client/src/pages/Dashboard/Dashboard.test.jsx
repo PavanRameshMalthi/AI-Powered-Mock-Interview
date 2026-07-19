@@ -36,8 +36,6 @@ test("renders dashboard summary and actions", async () => {
       monthlyProgress: [{ month: "2026-06", averageScore: 82 }],
     },
     skillGrowth: [{ skill: "React", score: 88 }],
-    strongSkillAreas: [{ name: "React" }],
-    weakSkillAreas: [{ name: "Accessibility" }],
   });
 
   render(
@@ -56,10 +54,6 @@ test("renders dashboard summary and actions", async () => {
   expect(screen.getByText("Interview Streak")).toBeInTheDocument();
   expect(screen.getByText("94%")).toBeInTheDocument();
   expect(screen.getByText("3d")).toBeInTheDocument();
-  expect(screen.getByText("Strong Areas")).toBeInTheDocument();
-  expect(screen.getByText("Weak Areas")).toBeInTheDocument();
-  expect(screen.getByText("React")).toBeInTheDocument();
-  expect(screen.getByText("Accessibility")).toBeInTheDocument();
   expect(screen.getByText("Score Trend")).toBeInTheDocument();
   expect(screen.getByText("Weekly Progress")).toBeInTheDocument();
   expect(screen.getByText("Monthly Progress")).toBeInTheDocument();

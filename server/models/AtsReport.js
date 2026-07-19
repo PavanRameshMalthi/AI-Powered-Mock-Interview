@@ -28,9 +28,6 @@ const atsReportSchema = new mongoose.Schema(
     matchedKeywords: [String],
     missingKeywords: [String],
     skillsDetected: [String],
-    strengths: [String],
-    weaknesses: [String],
-    recommendations: [String],
     sectionScores: {
       contact: Number,
       skills: Number,

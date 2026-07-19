@@ -159,13 +159,9 @@ const scoreResumeForRole = ({ resumeText, role = "" }) => {
       matchedKeywords: [],
       missingKeywords: getRoleKeywords(role).slice(0, 8),
       skillsDetected: [],
-      strongAreas: [],
-      weakAreas: ["Resume text could not be extracted."],
       recommendedNextSkills: [],
-      resumeEnhancementSuggestions: ["Upload a text-based PDF resume before scoring ATS fit."],
       skillGapAnalysis: { detected: [], recommended: [] },
       sectionScores: { contact: 0, skills: 0, experience: 0, education: 0, projects: 0 },
-      recommendations: ["Upload a text-based PDF resume before scoring ATS fit."],
     };
   }
 
@@ -222,17 +218,6 @@ const scoreResumeForRole = ({ resumeText, role = "" }) => {
 
   const skillsDetected = [...new Set(cataloguedSkills.map((s) => s.label))];
 
-  const strongAreas = [
-    ...cataloguedSkills.map((s) => s.label),
-    ...(hasProjects ? ["Academic / Personal Projects"] : []),
-    ...(hasExperience ? ["Industry Experience"] : []),
-    ...(hasEducation ? ["Formal Education Background"] : []),
-    ...(hasCerts ? ["Professional Certifications"] : []),
-    ...(impactWords >= 3 ? ["Impact-Driven Accomplishments"] : []),
-    ...(metricWords >= 4 ? ["Quantified Achievements"] : []),
-    ...(sectionScores.contact === 100 ? ["Complete Contact Information"] : []),
-  ].filter(Boolean).slice(0, 8);
-
   const ROLE_EXPECTED = {
     frontend: ["javascript", "typescript", "react", "html", "css", "testing", "git", "redux", "accessibility", "responsive"],
     backend: ["node", "express", "api", "mongodb", "sql", "authentication", "docker", "testing", "security", "redis"],
@@ -262,27 +247,7 @@ const scoreResumeForRole = ({ resumeText, role = "" }) => {
   if (impactWords < 2) missingNonTechnical.push("Impact Statements & Metrics");
   if (sectionScores.skills === 0) missingNonTechnical.push("Dedicated Skills Section");
 
-  const weakAreas = [
-    ...missingSkillEntries.map((s) => s.label),
-    ...missingNonTechnical,
-  ].filter(Boolean).slice(0, 8);
-
   const recommendedNextSkills = missingSkillEntries.map((s) => s.label).slice(0, 6);
-
-  // ── 10. Improvement recommendations ──────────────────────────────────────
-  const recommendations = [];
-  if (missingKeywords.length)
-    recommendations.push(`Add role keywords to your resume: ${missingKeywords.slice(0, 5).join(", ")}.`);
-  if (sectionScores.projects === 0)
-    recommendations.push("Add a Projects section with measurable outcomes and links.");
-  if (impactScore < 45)
-    recommendations.push("Use stronger action verbs (led, built, optimised) and add quantified results.");
-  if (!hasCerts)
-    recommendations.push("Add relevant certifications (AWS, Google, Microsoft, Coursera, etc.).");
-  if (sectionScores.skills === 0)
-    recommendations.push("Add a clearly labelled Skills or Technologies section.");
-  if (!recommendations.length)
-    recommendations.push("Resume is well-aligned. Keep examples concise and metrics-driven.");
 
   // ── 11. Skill Gap Analysis ────────────────────────────────────────────────
   const skillGapAnalysis = {
@@ -296,10 +261,7 @@ const scoreResumeForRole = ({ resumeText, role = "" }) => {
     matchedKeywords: matchedKeywords.slice(0, 12),
     missingKeywords,
     skillsDetected,
-    strongAreas,
-    weakAreas,
     recommendedNextSkills,
-    resumeEnhancementSuggestions: recommendations,
     skillGapAnalysis,
     sectionScores: {
       ...sectionScores,
@@ -309,10 +271,6 @@ const scoreResumeForRole = ({ resumeText, role = "" }) => {
       certifications:  certScore,
       completeness:    completenessScore,
     },
-    // backward compat
-    strengths:   strongAreas,
-    weaknesses:  weakAreas,
-    recommendations,
   };
 };
 

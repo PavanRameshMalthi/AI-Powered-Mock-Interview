@@ -171,35 +171,6 @@ const getAnalytics = asyncHandler(async (req, res) => {
     });
   });
 
-  // ── Strong areas: de-duplicate by readable label ──────────────────────────
-  const seenStrong = new Set();
-  const strongSkillAreas = [...matchedCounts.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .reduce((acc, [token, count]) => {
-      const label = toReadableLabel(token);
-      if (!seenStrong.has(label)) {
-        seenStrong.add(label);
-        acc.push({ name: label, count });
-      }
-      return acc;
-    }, [])
-    .slice(0, 8);
-
-  // ── Weak areas: de-duplicate by readable label ────────────────────────────
-  // Also exclude tokens already covered by strong areas
-  const seenWeak = new Set(seenStrong);
-  const weakSkillAreas = [...missingCounts.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .reduce((acc, [token, count]) => {
-      const label = toReadableLabel(token);
-      if (!seenWeak.has(label)) {
-        seenWeak.add(label);
-        acc.push({ name: label, count });
-      }
-      return acc;
-    }, [])
-    .slice(0, 8);
-
   // keep keywordCounts alias for skillGrowth below
   const keywordCounts = matchedCounts;
 
@@ -293,19 +264,7 @@ const getAnalytics = asyncHandler(async (req, res) => {
     return { label, score: avg };
   });
 
-  // ── Improvement recommendations derived from weak areas ──────────────────
-  const improvementRecommendations = weakSkillAreas.slice(0, 4).map((area) => {
-    const templates = [
-      `Add ${area.name} to your resume and practice related questions.`,
-      `Study ${area.name} — it appears frequently in the target role requirements.`,
-      `Build a small project demonstrating ${area.name} to fill this gap.`,
-      `Take an online course on ${area.name} to strengthen your profile.`,
-    ];
-    return templates[Math.floor(Math.random() * templates.length)];
-  });
-  if (!improvementRecommendations.length) {
-    improvementRecommendations.push("Great progress! Keep practising interviews and add quantified results to your resume.");
-  }
+
 
   res.json({
     success: true,
@@ -350,9 +309,6 @@ const getAnalytics = asyncHandler(async (req, res) => {
     },
     skillGrowth,
     skillScores,
-    strongSkillAreas,
-    weakSkillAreas,
-    improvementRecommendations,
   });
 });
 

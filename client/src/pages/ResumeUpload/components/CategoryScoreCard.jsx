@@ -31,10 +31,10 @@ const CATEGORY_LABELS = {
 };
 
 const getBarColor = (score) => {
-  if (score >= 80) return "var(--ats-green, #22c55e)";
-  if (score >= 60) return "var(--primary, #3dd6bd)";
-  if (score >= 40) return "#f97316";
-  return "#fb7185";
+  if (score >= 80) return "#22C55E";
+  if (score >= 60) return "#6366F1";
+  if (score >= 40) return "#F59E0B";
+  return "#EF4444";
 };
 
 const CategoryScoreCard = ({ category, score = 0, explanation = "", index = 0 }) => {
