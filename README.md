@@ -1,6 +1,6 @@
-# AI Mock Interview Platform
+# AI Career Platform
 
-🚀 **An AI-powered career preparation platform that helps users build professional resumes, analyze ATS compatibility, and practice AI-powered mock interviews.**
+🚀 **A premium AI-powered career preparation platform that helps users build professional resumes, analyze ATS compatibility, and practice mock interviews in a streamlined workspace.**
 
 ---
 
@@ -32,12 +32,12 @@
 ---
 
 ## Overview
-Navigating the modern job market requires candidate preparation at multiple steps: crafting an ATS-optimized resume, highlighting core skills, and practicing interview communication. This platform resolves these hurdles by consolidating a resume builder, automated ATS reporting, and dynamic AI interview generation into a unified, responsive career preparation workspace.
+Navigating the modern job market requires candidate preparation at multiple steps: crafting an ATS-optimized resume, highlighting core skills, and practicing interview communication. The **AI Career Platform** resolves these hurdles by consolidating a feature-rich resume builder, automated ATS scoring, and dynamic AI interview generation into a unified, responsive dark-themed workspace.
 
 ### Core Problems Solved
-- **Resume-to-Interview Alignment**: AI creates role-specific mock questions matching the candidate's custom achievements.
-- **ATS Disconnect**: Instant 12-category scanning evaluates resumes for keywords, formatting, and structural issues.
-- **Interactive Feedback Loop**: Detailed AI assessment scores candidate responses on relevance, correctness, and communication.
+- **Resume-to-Interview Alignment**: The system automatically pulls details from the active resume to craft role-specific, context-aware mock questions.
+- **ATS Disconnect**: Scans structure, sections, and keywords to calculate completeness metrics and identify missing elements.
+- **Interactive Feedback Loop**: Detailed Gemini AI assessment evaluates correctness, relevance, and communication, displaying precise subscores out of 100.
 
 ---
 
@@ -52,10 +52,10 @@ Navigating the modern job market requires candidate preparation at multiple step
     [ Select / Upload Resume PDF ]
                  │
                  ▼
-      [ ATS Analysis Check ]
+       [ ATS Analysis Check ]
                  │
                  ▼
-   [ Mock Interview Setup & Run ]
+    [ Mock Interview Setup & Run ]
                  │
                  ▼
      [ AI Evaluation Feedback ]
@@ -69,30 +69,30 @@ Navigating the modern job market requires candidate preparation at multiple step
 ## Features
 
 ### Authentication & Security
-- **Secure Register/Login**: Salted password hashing via BCrypt.
-- **JWT Middleware**: Dual JWT sessions (Access Token headers & Cookie-based Refresh tokens) with automatic client-side token refresh.
-- **Rate Limiting**: Request caps on login paths (10 queries/15m) and endpoints to protect against brute-force attacks.
+- **Secure Register/Login**: Uses salted password hashing via BCrypt and explicit password strength checks during registration.
+- **JWT Authorization**: Implements double JWT tokens (Access Tokens in headers and Cookie-based Refresh Tokens) with automated validation and silent token refresh.
+- **Security Middleware**: Configured with Helmet security headers, CORS origins validation, and body rate-limiters.
 
 ### Resume Builder
-- **Template Styles**: Choose from Professional, Student, Modern, Minimal, Creative, and ATS layouts.
-- **Interactive Forms**: Modular form tabs for personal info, experience, education, skills, and projects.
-- **PDF Exporter**: Live Client-side rendering and high-quality PDF downloads.
-- **Active State Sync**: Mark a resume as Active to automatically build plain-text summaries, run ATS analytics, and populate interview setups.
+- **Dynamic Formatting Templates**: Supports choosing from Modern, Minimal, Creative, and Academic resume templates.
+- **Interactive Form Tabs**: Segmented workspaces for personal details, professional experience, academic history, projects, and technologies.
+- **Interactive PDF Exporter**: Live client-side preview rendering and PDF generation.
+- **Active State Sync**: Mark a resume as active to populate candidate context for subsequent ATS scans and AI interview sessions.
 
 ### Resume Upload & OCR
-- **Multi-Format Uploads**: Support for PDF and DOCX documents with size verification limits (5MB).
-- **Extracted Text Parsing**: Extends OCR scanning to digest experiences, achievements, and keywords.
-- **Version History**: Saves multiple resume variants as unique database versions instead of overwriting previous records.
+- **Multi-Format Uploads**: File drop zone supporting PDF uploads.
+- **Extracted Text Parsing**: Extracted text parsing to parse uploaded files.
+- **Version History**: Saves multiple resume configurations as separate documents.
 
 ### ATS Analysis Engine
-- **Automated Score Gauge**: Shows formatting warnings, keyword counts, and critical recommendations.
-- **Section Detection**: Scans structure to find missing categories (e.g. Summary, Experience, Projects).
-- **Skill Extraction**: Merges resume parsed categories to index candidate strong and weak areas.
+- **Automated Score Gauge**: Scans resume layout, keyword densities, and categorization.
+- **Section Detection**: Scans structure to verify existence of required categories (Summary, Experience, Projects).
+- **Interactive Statistics**: Highlights details on keyword counts, statistics, and category-level scoring.
 
 ### AI Mock Interview
-- **Dynamic Session Generator**: Dynamic Gemini models create technical, behavioral, and HR questions based on the candidate's chosen target role.
-- **Context-Aware Prompts**: Aligns questions to experiences extracted from the candidate's resume context.
-- **AI Assessment Cards**: Feedback breaks down score, communication strength, technical correctness, and bullet-point suggestions.
+- **Dynamic Session Generator**: Uses Google Gemini models to generate technical and behavioral questions based on the candidate's chosen role, difficulty, and resume context.
+- **Live Response Panel**: Interface for recording text answers, finishing sessions, or skipping questions.
+- **AI Assessment Cards**: Feedback breaks down candidate answers, listing overall score, technical accuracy, relevance, and bullet-point suggestions.
 
 ---
 
@@ -103,16 +103,17 @@ Navigating the modern job market requires candidate preparation at multiple step
 | React 19 / ES6 | Node.js (Express 5.x) | MongoDB Atlas | Google Gemini AI |
 | Tailwind CSS (v4) | Helmet / CORS / Cookie Parser | Mongoose ODM | PDF-Parse / Multer |
 | Framer Motion | Express Validator | Indexed Collections | Axios Interceptors |
+| Lucide Icons | BCrypt.js / JWT | | |
 
 ---
 
 ## Project Structure
 
 ```
-AI-Mock-Interview/
+ai-career-platform/
 ├── client/                 # React Frontend (Vite)
 │   ├── src/
-│   │   ├── components/     # AppLayout, Sidebar, ProtectedRoute
+│   │   ├── components/     # AppLayout, Sidebar, ProtectedRoute, Topbar
 │   │   │   └── UI/         # PasswordField, ChartPanel, Toast
 │   │   ├── pages/          # Dashboard, ResumeBuilder, ResumeUpload, Settings
 │   │   ├── services/       # axios unified client, API request methods
@@ -134,8 +135,8 @@ AI-Mock-Interview/
 ## Installation
 Clone the repository:
 ```bash
-git clone https://github.com/your-username/ai-mock-interview.git
-cd ai-mock-interview
+git clone https://github.com/PavanRameshMalthi/AI-Mock-Interview.git
+cd AI-Mock-Interview
 ```
 
 ### Backend Setup:
@@ -163,7 +164,7 @@ Create files named `.env` in both client and server directories:
 ### Backend Configuration (`server/.env`)
 ```env
 PORT=5000
-MONGODB_URI=mongodb://localhost:27017/ai_mock_interview
+MONGODB_URI=mongodb://localhost:27017/ai_career_platform
 JWT_SECRET=your_jwt_auth_secret_key
 REFRESH_TOKEN_SECRET=your_jwt_refresh_secret_key
 GEMINI_API_KEY=AIzaSyYourGeminiKeyHere
@@ -178,10 +179,9 @@ VITE_API_URL=http://localhost:5000/api
 ---
 
 ## Roadmap
-- [ ] **ATS Resume Matcher**: Paste job descriptions to calculate contextual matching percentages.
-- [ ] **Voice-to-Text Speech Practice**: Audio answer transcript inputs.
-- [ ] **Coding Interview Console**: Interactive workspace for algorithms.
-- [ ] **Custom Roadmaps**: Generates custom courses based on Weak Skill assessments.
+- [ ] **ATS Job Description Matcher**: Paste target job specifications to evaluate contextual matching metrics.
+- [ ] **Voice-to-Text Speech Practice**: Integrate browser speech recognition APIs for hands-free answering.
+- [ ] **Coding Interview Console**: Interactive sandbox compiler for programming questions.
 
 ---
 
@@ -209,6 +209,6 @@ If you like this project, please consider:
 
 ## Author
 - **Author**: Pavan Ramesh Malthi
-- **Email**: pavanrameshmalthi886@gmail.com
+- **Email**: [pavanrameshmalthi886@gmail.com](mailto:pavanrameshmalthi886@gmail.com)
 - **LinkedIn**: [linkedin.com/in/pavan-ramesh-malthi](https://www.linkedin.com/in/pavan-ramesh-malthi/)
 - **GitHub**: [github.com/PavanRameshMalthi](https://github.com/PavanRameshMalthi)

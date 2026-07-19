@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, ChevronDown, User, Settings, LogOut, Menu } from "lucide-react";
+import { ChevronDown, User, Settings, LogOut, Menu } from "lucide-react";
 import authService from "../services/authService";
 
 const Topbar = ({ toggleSidebar, isCollapsed, setIsCollapsed }) => {
@@ -49,8 +49,8 @@ const Topbar = ({ toggleSidebar, isCollapsed, setIsCollapsed }) => {
         zIndex: 20,
       }}
     >
-      {/* Left: Hamburger & Search */}
-      <div style={{ display: "flex", alignItems: "center", gap: "16px", flexGrow: 1, maxWidth: "500px" }}>
+      {/* Left: Mobile Sidebar Toggle */}
+      <div className="mobile-toggle-wrap">
         <button 
           onClick={toggleSidebar} 
           className="btn-mobile-toggle"
@@ -67,33 +67,6 @@ const Topbar = ({ toggleSidebar, isCollapsed, setIsCollapsed }) => {
         >
           <Menu size={20} />
         </button>
-
-        <div className="search-bar-wrap" style={{ position: "relative", width: "100%" }}>
-          <Search 
-            size={16} 
-            style={{ 
-              position: "absolute", 
-              left: "14px", 
-              top: "50%", 
-              transform: "translateY(-50%)", 
-              color: "var(--muted)" 
-            }} 
-          />
-          <input
-            type="text"
-            placeholder="Search anything...   Ctrl+K"
-            style={{
-              paddingLeft: "42px",
-              paddingRight: "14px",
-              height: "40px",
-              fontSize: "0.85rem",
-              borderRadius: "10px",
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid var(--border)",
-              width: "100%",
-            }}
-          />
-        </div>
       </div>
 
       {/* Right: Notifications & Profile */}
