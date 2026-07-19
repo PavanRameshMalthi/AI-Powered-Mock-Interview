@@ -209,7 +209,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
     });
     await deliverMessage({
       to: email,
-      subject: "Reset your AI Mock Interview password",
+      subject: "Reset your AI Career Platform password",
       text: `Use this secure link within ${PASSWORD_RESET_TTL_MINUTES} minutes: ${resetUrl}`,
     });
 

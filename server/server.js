@@ -121,7 +121,7 @@ app.use("/api/history", historyRoutes);
 app.use("/api/admin", adminRoutes);
 
 app.get("/", (req, res) =>
-  res.json({ success: true, message: "AI Mock Interview API Running" })
+  res.json({ success: true, message: "AI Career Platform API Running" })
 );
 
 app.use(notFound);

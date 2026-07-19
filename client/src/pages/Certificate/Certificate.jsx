@@ -29,7 +29,7 @@ const Certificate = () => {
 
       <section className="certificate-shell">
         <div className="certificate-preview">
-          <p className="eyebrow">AI Mock Interview Platform</p>
+          <p className="eyebrow">AI Career Platform</p>
           <h2>Certificate of Completion</h2>
           <p>This certifies that</p>
           <strong>{user?.name || "Candidate"}</strong>

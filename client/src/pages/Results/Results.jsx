@@ -59,7 +59,7 @@ const Results = () => {
     const user = JSON.parse(localStorage.getItem("user") || "null");
     const config = JSON.parse(localStorage.getItem("interviewConfig") || "{}");
     const lines = [
-      "AI Mock Interview Report",
+      "AI Career Platform Report",
       `Candidate: ${user?.name || "Candidate"}`,
       `Date: ${new Date().toLocaleDateString()}`,
       `Interview Role: ${config.role || "N/A"}`,
@@ -113,7 +113,7 @@ const Results = () => {
     doc.setLineWidth(2);
     doc.rect(12, 12, 273, 186);
     doc.setFontSize(28);
-    doc.text("Certificate of Mock Interview Completion", 148, 48, {
+    doc.text("Certificate of Completion", 148, 48, {
       align: "center",
     });
     doc.setFontSize(14);
@@ -135,10 +135,10 @@ const Results = () => {
     doc.text(`Issued on ${new Date().toLocaleDateString()}`, 148, 160, {
       align: "center",
     });
-    doc.text(`Verification: AI-MOCK-${Date.now().toString(36).toUpperCase()}`, 148, 170, {
+    doc.text(`Verification: AI-CAREER-${Date.now().toString(36).toUpperCase()}`, 148, 170, {
       align: "center",
     });
-    doc.text("AI Mock Interview Platform", 148, 178, { align: "center" });
+    doc.text("AI Career Platform", 148, 178, { align: "center" });
     doc.save("Interview_Certificate.pdf");
   };
 

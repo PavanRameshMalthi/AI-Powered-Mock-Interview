@@ -546,13 +546,48 @@ const Landing = () => {
       </motion.section>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-white/5 bg-[#0A0F1D] py-12 text-slate-500 text-xs">
-        <div className="mx-auto max-w-7xl px-6 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+      <footer className="border-t border-white/5 bg-[#0A0F1D] py-16 text-slate-500 text-xs">
+        <div className="mx-auto max-w-7xl px-6 sm:px-8 grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+          {/* Col 1: Brand & Copyright */}
+          <div className="flex flex-col gap-3">
+            <Link to="/" style={{ textDecoration: "none" }} className="text-sm font-black tracking-tight text-white transition hover:text-indigo-400">
+              AI Career Platform
+            </Link>
+            <p className="text-slate-500 leading-relaxed text-[11px] max-w-xs">
+              Next-generation mock interview workspace and resume ATS auditor to accelerate job preparation.
+            </p>
+          </div>
+
+          {/* Col 2: Quick Links */}
+          <div className="flex flex-col gap-3">
+            <strong className="text-slate-300 font-bold tracking-wider uppercase text-[10px]">Quick Links</strong>
+            <Link to="/" className="hover:text-slate-300 transition" style={{ textDecoration: "none" }}>Home</Link>
+            <Link to="/login" className="hover:text-slate-300 transition" style={{ textDecoration: "none" }}>Login</Link>
+            <Link to="/register" className="hover:text-slate-300 transition" style={{ textDecoration: "none" }}>Signup</Link>
+          </div>
+
+          {/* Col 3: Company */}
+          <div className="flex flex-col gap-3">
+            <strong className="text-slate-300 font-bold tracking-wider uppercase text-[10px]">Company</strong>
+            <span className="cursor-default">About Us</span>
+            <span className="cursor-default">Contact Support</span>
+            <a href="mailto:support@aicareer.com" className="hover:text-slate-300 transition" style={{ textDecoration: "none" }}>Email Contact</a>
+          </div>
+
+          {/* Col 4: Resources & Legal */}
+          <div className="flex flex-col gap-3">
+            <strong className="text-slate-300 font-bold tracking-wider uppercase text-[10px]">Legal</strong>
+            <span className="cursor-default">Privacy Policy</span>
+            <span className="cursor-default">Terms of Service</span>
+          </div>
+        </div>
+
+        <div className="mx-auto max-w-7xl px-6 sm:px-8 border-t border-white/5 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p>© 2026 AI Career Platform. All rights reserved.</p>
-          <div className="flex gap-6">
-            <a href="https://github.com" className="hover:text-slate-300 transition">GitHub</a>
-            <a href="https://linkedin.com" className="hover:text-slate-300 transition">LinkedIn</a>
-            <a href="mailto:support@aicareer.com" className="hover:text-slate-300 transition">Email</a>
+          <div className="flex gap-4">
+            <span className="cursor-default hover:text-slate-300 transition">Privacy</span>
+            <span>•</span>
+            <span className="cursor-default hover:text-slate-300 transition">Terms</span>
           </div>
         </div>
       </footer>

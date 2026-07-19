@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FaSun, FaMoon, FaLaptop } from "react-icons/fa";
+import { Sun, Moon, Laptop } from "lucide-react";
 import AppRoutes from "./routes/AppRoutes";
 
 function App() {
@@ -13,9 +13,9 @@ function App() {
   }, [theme]);
 
   const themes = [
-    { name: "light", icon: <FaSun title="Light Theme" /> },
-    { name: "dark", icon: <FaMoon title="Dark Theme" /> },
-    { name: "system", icon: <FaLaptop title="System Theme" /> },
+    { name: "light", icon: <Sun title="Light Theme" size={14} /> },
+    { name: "dark", icon: <Moon title="Dark Theme" size={14} /> },
+    { name: "system", icon: <Laptop title="System Theme" size={14} /> },
   ];
 
   return (

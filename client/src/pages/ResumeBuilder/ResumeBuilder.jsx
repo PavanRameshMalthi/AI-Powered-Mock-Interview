@@ -2,17 +2,13 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  FaChartLine,
-  FaFileAlt,
-  FaTrashAlt,
-  FaCopy,
-  FaEdit,
-  FaFilePdf,
-  FaPlus,
-  FaChevronRight,
-  FaCheck,
-  FaEye,
-} from "react-icons/fa";
+  FileText,
+  Trash2,
+  Copy,
+  Edit,
+  Plus,
+  Eye,
+} from "lucide-react";
 import api from "../../services/api";
 import "./ResumeBuilder.css";
 
@@ -779,7 +775,7 @@ const ResumeBuilder = () => {
             <p className="muted">Create multiple tailored versions and sync them natively with mock interviews.</p>
           </div>
           <button className="btn btn-primary" onClick={handleCreate}>
-            <FaPlus /> Create New Resume
+            <Plus size={16} /> Create New Resume
           </button>
         </header>
 
@@ -831,7 +827,7 @@ const ResumeBuilder = () => {
                   </div>
                   <div className="rb-card-actions-full">
                     <button className="btn btn-secondary" style={{ flexGrow: 1 }} onClick={() => handleEdit(res)}>
-                      <FaEdit /> Edit
+                      <Edit size={14} /> Edit
                     </button>
                     {!res.isActive && (
                       <button className="btn btn-ghost" style={{ border: "1px solid var(--border)" }} onClick={(e) => handleSetActive(res._id, e)}>
@@ -841,10 +837,10 @@ const ResumeBuilder = () => {
                   </div>
                   <div className="rb-card-actions">
                     <button className="btn btn-ghost" style={{ fontSize: "0.8rem", padding: "6px" }} onClick={(e) => handleDuplicate(res._id, e)}>
-                      <FaCopy /> Copy
+                      <Copy size={12} /> Copy
                     </button>
                     <button className="btn btn-ghost" style={{ fontSize: "0.8rem", padding: "6px", color: "var(--danger)" }} onClick={(e) => handleDelete(res._id, e)}>
-                      <FaTrashAlt /> Delete
+                      <Trash2 size={12} /> Delete
                     </button>
                   </div>
                 </div>
@@ -981,7 +977,7 @@ const ResumeBuilder = () => {
             )}
           </div>
           <button className="btn btn-secondary" onClick={handleDownloadPdf}>
-            <FaFilePdf /> Download PDF
+            <FileText size={16} /> Download PDF
           </button>
           <button className="btn btn-primary" onClick={handleSaveAndExit}>
             Save & Exit
@@ -1462,7 +1458,7 @@ const ResumeBuilder = () => {
         <section className="rb-preview-pane">
           <div className="rb-preview-toolbar">
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <FaEye />
+              <Eye size={16} />
               <strong style={{ fontSize: "0.95rem" }}>Live Preview</strong>
             </div>
             <span className="rb-save-status" style={{ color: saveStatus === "Saved" ? "var(--primary)" : "var(--muted)" }}>

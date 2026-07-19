@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, Bell, ChevronDown, User, Settings, LogOut, Menu } from "lucide-react";
+import { Search, ChevronDown, User, Settings, LogOut, Menu } from "lucide-react";
 import authService from "../services/authService";
 
 const Topbar = ({ toggleSidebar, isCollapsed, setIsCollapsed }) => {
@@ -97,179 +97,128 @@ const Topbar = ({ toggleSidebar, isCollapsed, setIsCollapsed }) => {
       </div>
 
       {/* Right: Notifications & Profile */}
-      <div style={{ display: "flex", alignItems: "center", gap: "18px" }}>
-        {/* Notification Bell */}
-        <button 
-          style={{ 
-            background: "rgba(255,255,255,0.02)", 
-            border: "1px solid var(--border)", 
-            color: "var(--text)", 
-            padding: "10px", 
-            borderRadius: "10px", 
-            cursor: "pointer",
-            position: "relative",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center"
-          }}
-          aria-label="Notifications"
-        >
-          <Bell size={18} />
-          <span 
-            style={{ 
-              position: "absolute", 
-              top: "6px", 
-              right: "6px", 
-              width: "8px", 
-              height: "8px", 
-              background: "var(--accent)", 
-              borderRadius: "50%",
-              boxShadow: "0 0 8px var(--accent)"
-            }} 
-          />
-        </button>
-
-        {/* User Card */}
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          {/* Plan badge */}
-          <span 
-            className="plan-badge"
+      {/* Right: Profile Dropdown */}
+      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        {/* Profile Dropdown Trigger */}
+        <div ref={dropdownRef} style={{ position: "relative" }}>
+          <button
+            onClick={() => setDropdownOpen((prev) => !prev)}
             style={{
-              background: "linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.15))",
-              color: "#a78bfa",
-              border: "1px solid rgba(139,92,246,0.2)",
-              fontSize: "0.72rem",
-              fontWeight: 700,
-              padding: "4px 10px",
-              borderRadius: "20px",
-              textTransform: "uppercase",
-              letterSpacing: "0.05em"
+              background: "transparent",
+              border: "none",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              cursor: "pointer",
+              padding: "4px"
             }}
+            aria-expanded={dropdownOpen}
           >
-            Premium Plan
-          </span>
-
-          {/* Profile Dropdown Trigger */}
-          <div ref={dropdownRef} style={{ position: "relative" }}>
-            <button
-              onClick={() => setDropdownOpen((prev) => !prev)}
+            <div 
               style={{
-                background: "transparent",
-                border: "none",
+                width: "36px",
+                height: "36px",
+                borderRadius: "50%",
+                background: "linear-gradient(135deg, #6366F1, #8B5CF6)",
+                color: "#fff",
                 display: "flex",
                 alignItems: "center",
-                gap: "8px",
-                cursor: "pointer",
-                padding: "4px"
+                justifyContent: "center",
+                fontWeight: 700,
+                fontSize: "0.9rem",
+                boxShadow: "0 0 10px rgba(99,102,241,0.2)"
               }}
-              aria-expanded={dropdownOpen}
             >
-              <div 
+              {user?.name ? user.name[0].toUpperCase() : "U"}
+            </div>
+            <div className="profile-name-section" style={{ textAlign: "left" }}>
+              <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text)" }}>
+                {user?.name || "User"}
+              </div>
+            </div>
+            <ChevronDown size={14} style={{ color: "var(--muted)", transform: dropdownOpen ? "rotate(180deg)" : "rotate(0)" }} />
+          </button>
+
+          {/* Dropdown Menu */}
+          {dropdownOpen && (
+            <div
+              style={{
+                position: "absolute",
+                right: 0,
+                marginTop: "8px",
+                width: "180px",
+                background: "rgba(30, 41, 59, 0.95)",
+                backdropFilter: "blur(16px)",
+                WebkitBackdropFilter: "blur(16px)",
+                border: "1px solid var(--border)",
+                borderRadius: "12px",
+                padding: "6px",
+                boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.4)",
+                zIndex: 30,
+                display: "grid",
+                gap: "2px"
+              }}
+            >
+              <Link
+                to="/profile"
+                onClick={() => setDropdownOpen(false)}
                 style={{
-                  width: "36px",
-                  height: "36px",
-                  borderRadius: "50%",
-                  background: "linear-gradient(135deg, #6366F1, #8B5CF6)",
-                  color: "#fff",
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
-                  fontWeight: 700,
-                  fontSize: "0.9rem",
-                  boxShadow: "0 0 10px rgba(99,102,241,0.2)"
+                  gap: "10px",
+                  padding: "10px 12px",
+                  fontSize: "0.85rem",
+                  color: "var(--text)",
+                  textDecoration: "none",
+                  borderRadius: "8px",
+                  transition: "background 0.2s ease"
                 }}
+                className="dropdown-item"
               >
-                {user?.name ? user.name[0].toUpperCase() : "U"}
-              </div>
-              <div style={{ textAlign: "left", display: "none" }} className="profile-name-section">
-                <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text)" }}>
-                  {user?.name || "User"}
-                </div>
-              </div>
-              <ChevronDown size={14} style={{ color: "var(--muted)", transform: dropdownOpen ? "rotate(180deg)" : "rotate(0)" }} />
-            </button>
-
-            {/* Dropdown Menu */}
-            {dropdownOpen && (
-              <div
+                <User size={14} /> Profile
+              </Link>
+              <Link
+                to="/settings"
+                onClick={() => setDropdownOpen(false)}
                 style={{
-                  position: "absolute",
-                  right: 0,
-                  marginTop: "8px",
-                  width: "180px",
-                  background: "rgba(30, 41, 59, 0.95)",
-                  backdropFilter: "blur(16px)",
-                  WebkitBackdropFilter: "blur(16px)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "12px",
-                  padding: "6px",
-                  boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.4)",
-                  zIndex: 30,
-                  display: "grid",
-                  gap: "2px"
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  padding: "10px 12px",
+                  fontSize: "0.85rem",
+                  color: "var(--text)",
+                  textDecoration: "none",
+                  borderRadius: "8px",
+                  transition: "background 0.2s ease"
                 }}
+                className="dropdown-item"
               >
-                <Link
-                  to="/profile"
-                  onClick={() => setDropdownOpen(false)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    padding: "10px 12px",
-                    fontSize: "0.85rem",
-                    color: "var(--text)",
-                    textDecoration: "none",
-                    borderRadius: "8px",
-                    transition: "background 0.2s ease"
-                  }}
-                  className="dropdown-item"
-                >
-                  <User size={14} /> Profile
-                </Link>
-                <Link
-                  to="/settings"
-                  onClick={() => setDropdownOpen(false)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    padding: "10px 12px",
-                    fontSize: "0.85rem",
-                    color: "var(--text)",
-                    textDecoration: "none",
-                    borderRadius: "8px",
-                    transition: "background 0.2s ease"
-                  }}
-                  className="dropdown-item"
-                >
-                  <Settings size={14} /> Settings
-                </Link>
-                <div style={{ height: "1px", background: "var(--border)", margin: "4px 6px" }} />
-                <button
-                  onClick={logout}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    padding: "10px 12px",
-                    fontSize: "0.85rem",
-                    color: "var(--danger)",
-                    background: "transparent",
-                    border: "none",
-                    width: "100%",
-                    textAlign: "left",
-                    cursor: "pointer",
-                    borderRadius: "8px",
-                    transition: "background 0.2s ease"
-                  }}
-                  className="dropdown-item dropdown-logout"
-                >
-                  <LogOut size={14} /> Logout
-                </button>
-              </div>
-            )}
-          </div>
+                <Settings size={14} /> Settings
+              </Link>
+              <div style={{ height: "1px", background: "var(--border)", margin: "4px 6px" }} />
+              <button
+                onClick={logout}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  padding: "10px 12px",
+                  fontSize: "0.85rem",
+                  color: "var(--danger)",
+                  background: "transparent",
+                  border: "none",
+                  width: "100%",
+                  textAlign: "left",
+                  cursor: "pointer",
+                  borderRadius: "8px",
+                  transition: "background 0.2s ease"
+                }}
+                className="dropdown-item dropdown-logout"
+              >
+                <LogOut size={14} /> Logout
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>

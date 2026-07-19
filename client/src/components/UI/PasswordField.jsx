@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { Eye, EyeOff } from "lucide-react";
 import { getPasswordChecks, getPasswordStrength } from "../../utils/passwordUtils";
 
 const PasswordField = ({
@@ -35,7 +35,7 @@ const PasswordField = ({
           onClick={() => setVisible((current) => !current)}
           type="button"
         >
-          {visible ? <FaEyeSlash aria-hidden="true" /> : <FaEye aria-hidden="true" />}
+          {visible ? <EyeOff aria-hidden="true" size={16} /> : <Eye aria-hidden="true" size={16} />}
         </button>
       </span>
     </label>
