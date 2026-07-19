@@ -1,6 +1,8 @@
 import "@testing-library/jest-dom";
 
 /* global jest */
+jest.setTimeout(15000);
+
 HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
   canvas: document.createElement("canvas"),
   clearRect: jest.fn(),

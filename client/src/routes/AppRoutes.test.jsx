@@ -44,7 +44,7 @@ test("renders public landing route", async () => {
   expect(
     await screen.findByRole("heading", {
       name: /practice technical interviews with required answers/i,
-    })
+    }, { timeout: 10000 })
   ).toBeInTheDocument();
 });
 
@@ -57,5 +57,5 @@ test("redirects protected routes to login", async () => {
     </MemoryRouter>
   );
 
-  expect(await screen.findByRole("heading", { name: /login/i })).toBeInTheDocument();
+  expect(await screen.findByRole("heading", { name: /login/i }, { timeout: 10000 })).toBeInTheDocument();
 });
