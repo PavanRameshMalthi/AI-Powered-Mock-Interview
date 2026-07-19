@@ -210,9 +210,5 @@ If you like this project, please consider:
 ## Author
 - **Author**: Pavan Ramesh Malthi
 - **Email**: pavanrameshmalthi886@gmail.com
-<<<<<<< HEAD
 - **LinkedIn**: [linkedin.com/in/pavan-ramesh-malthi](https://www.linkedin.com/in/pavan-ramesh-malthi/)
-=======
-- **LinkedIn**: [Pavan Ramesh Malthi](www.linkedin.com/in/pavan-ramesh-malthi)
->>>>>>> b5f6927359b656430b8e06e00c48b44a004a1dc2
 - **GitHub**: [github.com/PavanRameshMalthi](https://github.com/PavanRameshMalthi)
