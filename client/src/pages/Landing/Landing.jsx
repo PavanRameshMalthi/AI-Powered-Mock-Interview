@@ -2,16 +2,21 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  FaArrowRight,
-  FaBriefcase,
-  FaChartLine,
-  FaCheckCircle,
-  FaChevronDown,
-  FaFileAlt,
-  FaLock,
-  FaMicrophone,
-  FaRegLightbulb,
-} from "react-icons/fa";
+  ArrowRight,
+  Briefcase,
+  TrendingUp,
+  CheckCircle2,
+  ChevronDown,
+  FileText,
+  Lock,
+  Mic,
+  Lightbulb,
+  Shield,
+  Zap,
+  Globe,
+  Cpu,
+  Layers
+} from "lucide-react";
 
 const sectionMotion = {
   initial: { opacity: 0, y: 22 },
@@ -25,37 +30,37 @@ const Landing = () => {
 
   const features = [
     {
-      Icon: FaBriefcase,
+      Icon: Briefcase,
       title: "Role-focused question sets",
       description:
         "Configure practice for frontend, backend, full-stack, data, HR, and role-specific difficulty levels.",
     },
     {
-      Icon: FaMicrophone,
+      Icon: Mic,
       title: "Typed or voice answers",
       description:
         "Respond naturally with the microphone or type detailed answers while the session keeps progress in sync.",
     },
     {
-      Icon: FaChartLine,
+      Icon: TrendingUp,
       title: "Structured scorecards",
       description:
         "Review correctness, relevance, technical accuracy, communication, and completeness after each round.",
     },
     {
-      Icon: FaFileAlt,
+      Icon: FileText,
       title: "Resume-aware feedback",
       description:
         "Use optional resume context to compare target-role keywords and expose gaps before real interviews.",
     },
     {
-      Icon: FaRegLightbulb,
+      Icon: Lightbulb,
       title: "Actionable coaching",
       description:
         "See what landed, what missed, and how to rewrite answers with sharper examples and tradeoffs.",
     },
     {
-      Icon: FaLock,
+      Icon: Lock,
       title: "Private history",
       description:
         "Save completed sessions to your account so improvement, reports, and certificates stay accessible.",
@@ -98,93 +103,201 @@ const Landing = () => {
     },
   ];
 
+  const techStack = [
+    { name: "React", icon: Globe, color: "#61DAFB", desc: "Dynamic UI components & routing" },
+    { name: "Node.js", icon: Cpu, color: "#339933", desc: "Scalable backend & API handlers" },
+    { name: "MongoDB", icon: Layers, color: "#47A248", desc: "Flexible career progress store" },
+    { name: "Gemini AI", icon: Zap, color: "#8B5CF6", desc: "Intelligent evaluation models" },
+    { name: "Tailwind", icon: Globe, color: "#06B6D4", desc: "Utility-first clean layout design" },
+    { name: "JWT", icon: Shield, color: "#FF007F", desc: "Secure token-based sessions" },
+  ];
+
   return (
-    <main className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
-      <nav className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-5 sm:px-6 lg:px-8">
-        <Link
-          className="text-base font-black tracking-tight text-[var(--text)] sm:text-lg"
-          to="/"
-        >
-          AI Mock Interview
-        </Link>
-        <div className="flex items-center gap-2 sm:gap-3">
+    <main className="min-h-screen bg-[#0B1120] text-slate-100 font-sans relative overflow-hidden" style={{ isolation: "isolate" }}>
+      {/* ── Background Glow Circles ── */}
+      <div 
+        style={{
+          position: "fixed",
+          top: "-15%",
+          left: "-10%",
+          width: "50vw",
+          height: "50vw",
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%)",
+          zIndex: -1,
+          filter: "blur(60px)",
+          pointerEvents: "none"
+        }}
+      />
+      <div 
+        style={{
+          position: "fixed",
+          bottom: "-10%",
+          right: "-10%",
+          width: "45vw",
+          height: "45vw",
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 70%)",
+          zIndex: -1,
+          filter: "blur(60px)",
+          pointerEvents: "none"
+        }}
+      />
+      {/* Subtle Grid pattern */}
+      <div 
+        style={{
+          position: "absolute",
+          inset: 0,
+          backgroundSize: "40px 40px",
+          backgroundImage: "linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px)",
+          zIndex: -2,
+          pointerEvents: "none"
+        }}
+      />
+
+      {/* ── Navbar ── */}
+      <nav 
+        className="sticky top-0 z-50 w-full"
+        style={{
+          background: "rgba(11, 17, 32, 0.75)",
+          backdropFilter: "blur(12px)",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.05)"
+        }}
+      >
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 sm:px-8">
           <Link
-            className="rounded-md px-3 py-2 text-sm font-bold text-[var(--muted)] transition hover:text-[var(--text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
-            to="/login"
+            className="text-lg font-black tracking-tight text-white transition hover:text-indigo-400"
+            to="/"
+            style={{ textDecoration: "none" }}
           >
-            Login
+            AI Career Platform
           </Link>
-          <Link
-            className="btn btn-primary compact"
-            to="/register"
-          >
-            Signup
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              className="px-4 py-2 text-sm font-bold text-slate-400 transition hover:text-white"
+              to="/login"
+              style={{ textDecoration: "none" }}
+            >
+              Login
+            </Link>
+            <Link
+              className="btn btn-primary compact"
+              to="/register"
+              style={{
+                background: "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)",
+                color: "#fff",
+                border: "none",
+                borderRadius: "8px",
+                textDecoration: "none"
+              }}
+            >
+              Signup
+            </Link>
+          </div>
         </div>
       </nav>
 
-      <section className="mx-auto grid min-h-[calc(100vh-88px)] w-full max-w-7xl items-center gap-10 px-4 pb-16 pt-8 sm:px-6 lg:grid-cols-[1.04fr_0.96fr] lg:px-8">
+      {/* ── Hero Section ── */}
+      <section className="mx-auto grid min-h-[calc(100vh-80px)] w-full max-w-7xl items-center gap-12 px-6 pb-20 pt-12 sm:px-8 lg:grid-cols-2">
         <motion.div
-          initial={{ opacity: 0, y: 18 }}
+          initial={{ opacity: 0, y: 25 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
         >
-          <p className="mb-4 text-sm font-black uppercase tracking-widest text-[var(--primary)]">
-            Interview practice workspace
-          </p>
-          <h1 className="max-w-4xl text-4xl font-black leading-tight tracking-normal text-[var(--text)] sm:text-5xl lg:text-6xl">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-black uppercase tracking-wider mb-6">
+            <Zap size={12} /> Interview Practice Workspace
+          </div>
+          <h1 className="max-w-xl text-4xl font-black leading-tight tracking-normal text-white sm:text-5xl lg:text-6xl">
             Practice technical interviews with required answers and precise feedback.
           </h1>
-          <p className="mt-6 max-w-2xl text-base leading-8 text-[var(--muted)] sm:text-lg">
+          <p className="mt-6 max-w-lg text-base leading-8 text-slate-400 sm:text-lg">
             Build role-specific mock sessions, answer every question, submit for
             evaluation, and keep the full history of your progress in one place.
           </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-8 flex flex-col gap-4 sm:flex-row">
             <Link
               className="btn btn-primary"
               to="/register"
+              style={{
+                background: "linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)",
+                color: "#fff",
+                border: "none",
+                borderRadius: "10px",
+                padding: "12px 24px",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                boxShadow: "0 4px 20px rgba(99, 102, 241, 0.25)",
+                textDecoration: "none"
+              }}
             >
-              Signup <FaArrowRight aria-hidden="true" />
+              Signup <ArrowRight size={16} />
             </Link>
             <Link
               className="btn btn-secondary"
               to="/login"
+              style={{
+                borderRadius: "10px",
+                padding: "12px 24px",
+                textDecoration: "none"
+              }}
             >
               Login
             </Link>
+            <button
+              className="btn btn-ghost"
+              style={{
+                borderRadius: "10px",
+                padding: "12px 24px",
+                border: "1px solid rgba(255, 255, 255, 0.08)",
+                color: "var(--text)"
+              }}
+              onClick={() => {}}
+            >
+              Watch Demo
+            </button>
           </div>
         </motion.div>
 
+        {/* Right Preview Card */}
         <motion.div
-          className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xl sm:p-6"
-          initial={{ opacity: 0, y: 18 }}
+          className="panel"
+          initial={{ opacity: 0, y: 25 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.12, ease: "easeOut" }}
+          transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
           aria-label="Interview workflow preview"
+          style={{
+            padding: "28px",
+            background: "rgba(30, 41, 59, 0.4)",
+            backdropFilter: "blur(16px)",
+            border: "1px solid rgba(255, 255, 255, 0.08)",
+            borderRadius: "20px",
+            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)"
+          }}
         >
-          <div className="mb-5 flex items-center justify-between gap-4 border-b border-[var(--border)] pb-4">
+          <div className="mb-6 flex items-center justify-between gap-4 border-b border-white/5 pb-4">
             <div>
-              <p className="text-xs font-black uppercase tracking-widest text-[var(--primary)]">
+              <p className="text-[10px] font-black uppercase tracking-widest text-indigo-400">
                 Session flow
               </p>
-              <h2 className="mt-1 text-xl font-black text-[var(--text)]">From setup to history</h2>
+              <h2 className="mt-1 text-lg font-black text-white">From setup to history</h2>
             </div>
-            <span className="rounded-md border border-[var(--border)] px-3 py-1 text-xs font-bold text-[var(--muted)]">
+            <span className="rounded-full bg-white/5 border border-white/10 px-3 py-1 text-xs font-bold text-slate-400">
               Authenticated
             </span>
           </div>
-          <ol className="space-y-3">
+          <ol className="space-y-4">
             {steps.map(([title, description], index) => (
               <li
-                className="grid grid-cols-[auto_1fr] gap-4 rounded-md border border-[var(--border)] bg-[var(--bg)] p-4"
+                className="grid grid-cols-[auto_1fr] gap-4 rounded-xl border border-white/5 bg-[#0B1120]/60 p-4 transition-all duration-300 hover:border-indigo-500/30"
                 key={title}
               >
-                <span className="grid h-9 w-9 place-items-center rounded-md bg-[var(--primary)] text-sm font-black text-[var(--bg)]">
+                <span className="grid h-9 w-9 place-items-center rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-sm font-black text-indigo-400">
                   {index + 1}
                 </span>
                 <span>
-                  <strong className="block text-sm text-[var(--text)]">{title}</strong>
-                  <span className="mt-1 block text-sm leading-6 text-[var(--muted)]">
+                  <strong className="block text-sm text-slate-200">{title}</strong>
+                  <span className="mt-1 block text-xs leading-5 text-slate-400">
                     {description}
                   </span>
                 </span>
@@ -194,28 +307,72 @@ const Landing = () => {
         </motion.div>
       </section>
 
+      {/* ── Trusted Technologies / Stack Section ── */}
+      <section className="border-t border-white/5 bg-[#0F172A]/40 py-16">
+        <div className="mx-auto max-w-7xl px-6 sm:px-8">
+          <p className="text-center text-xs font-black uppercase tracking-widest text-indigo-400 mb-10">
+            Trusted Platform Architecture
+          </p>
+          <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-6">
+            {techStack.map((tech) => (
+              <div 
+                key={tech.name} 
+                className="panel"
+                style={{
+                  padding: "16px",
+                  textAlign: "center",
+                  background: "rgba(30, 41, 59, 0.2)",
+                  border: "1px solid rgba(255, 255, 255, 0.04)",
+                  borderRadius: "12px",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "8px"
+                }}
+              >
+                <div style={{ color: tech.color, background: `${tech.color}12`, padding: "8px", borderRadius: "8px" }}>
+                  <tech.icon size={18} />
+                </div>
+                <strong className="text-sm text-slate-200">{tech.name}</strong>
+                <span className="text-[10px] text-slate-500 leading-normal">{tech.desc}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Features Section ── */}
       <motion.section
-        className="border-y border-[var(--border)] bg-[var(--surface-soft)] px-4 py-16 sm:px-6 lg:px-8"
+        className="border-y border-white/5 bg-[#0F172A]/20 px-6 py-20 sm:px-8"
         {...sectionMotion}
       >
         <div className="mx-auto max-w-7xl">
           <div className="max-w-3xl">
-            <p className="text-sm font-black uppercase tracking-widest text-[var(--primary)]">
+            <p className="text-xs font-black uppercase tracking-widest text-indigo-400">
               Features
             </p>
-            <h2 className="mt-3 text-3xl font-black tracking-normal text-[var(--text)] sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-black tracking-normal text-white sm:text-4xl">
               A complete preparation loop without fake urgency.
             </h2>
           </div>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((feature) => (
               <article
-                className="rounded-lg border border-[var(--border)] bg-[var(--bg)] p-5"
+                className="panel interactive-row"
                 key={feature.title}
+                style={{
+                  padding: "24px",
+                  background: "rgba(30, 41, 59, 0.3)",
+                  border: "1px solid rgba(255, 255, 255, 0.05)",
+                  borderRadius: "16px",
+                  transition: "transform 0.2s, border-color 0.2s"
+                }}
               >
-                <feature.Icon className="mb-5 text-2xl text-[var(--primary)]" aria-hidden="true" />
-                <h3 className="text-lg font-black text-[var(--text)]">{feature.title}</h3>
-                <p className="mt-3 text-sm leading-7 text-[var(--muted)]">
+                <div className="mb-5 inline-flex p-3 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
+                  <feature.Icon size={20} aria-hidden="true" />
+                </div>
+                <h3 className="text-lg font-black text-slate-200">{feature.title}</h3>
+                <p className="mt-3 text-xs leading-6 text-slate-400">
                   {feature.description}
                 </p>
               </article>
@@ -224,91 +381,101 @@ const Landing = () => {
         </div>
       </motion.section>
 
-      <motion.section className="px-4 py-16 sm:px-6 lg:px-8" {...sectionMotion}>
-        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.8fr_1.2fr]">
+      {/* ── How It Works / Workflow Section ── */}
+      <motion.section className="px-6 py-20 sm:px-8" {...sectionMotion}>
+        <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.8fr_1.2fr]">
           <div>
-            <p className="text-sm font-black uppercase tracking-widest text-[var(--primary)]">
+            <p className="text-xs font-black uppercase tracking-widest text-indigo-400">
               How it works
             </p>
-            <h2 className="mt-3 text-3xl font-black tracking-normal text-[var(--text)] sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-black tracking-normal text-white sm:text-4xl">
               Built around the real interview flow.
             </h2>
-            <p className="mt-4 text-base leading-8 text-[var(--muted)]">
+            <p className="mt-4 text-sm leading-7 text-slate-400">
               The product path is direct: configure, answer, evaluate, and
               review. Each step supports the next one without hiding the work.
             </p>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-6 sm:grid-cols-2">
             {steps.map(([title, description], index) => (
               <div
-                className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5"
+                className="panel"
                 key={title}
+                style={{
+                  padding: "24px",
+                  background: "rgba(30, 41, 59, 0.25)",
+                  border: "1px solid rgba(255, 255, 255, 0.05)",
+                  borderRadius: "16px"
+                }}
               >
-                <span className="text-sm font-black text-[var(--primary)]">
+                <span className="text-xs font-black text-indigo-400">
                   Step {index + 1}
                 </span>
-                <h3 className="mt-3 text-lg font-black text-[var(--text)]">{title}</h3>
-                <p className="mt-2 text-sm leading-7 text-[var(--muted)]">{description}</p>
+                <h3 className="mt-3 text-base font-black text-slate-200">{title}</h3>
+                <p className="mt-2 text-xs leading-6 text-slate-400">{description}</p>
               </div>
             ))}
           </div>
         </div>
       </motion.section>
 
+      {/* ── Benefits Section ── */}
       <motion.section
-        className="border-y border-[var(--border)] bg-[var(--surface-soft)] px-4 py-16 sm:px-6 lg:px-8"
+        className="border-y border-white/5 bg-[#0F172A]/40 px-6 py-20 sm:px-8"
         {...sectionMotion}
       >
-        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
           <div>
-            <p className="text-sm font-black uppercase tracking-widest text-[var(--primary)]">
+            <p className="text-xs font-black uppercase tracking-widest text-indigo-400">
               Benefits
             </p>
-            <h2 className="mt-3 text-3xl font-black tracking-normal text-[var(--text)] sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-black tracking-normal text-white sm:text-4xl">
               Make practice specific enough to change behavior.
             </h2>
           </div>
           <div className="space-y-4">
             {benefits.map((benefit) => (
               <div
-                className="flex gap-4 rounded-lg border border-[var(--border)] bg-[var(--bg)] p-5"
+                className="flex gap-4 rounded-xl border border-white/5 bg-[#0B1120]/80 p-5"
                 key={benefit}
               >
-                <FaCheckCircle className="mt-1 shrink-0 text-[var(--primary)]" aria-hidden="true" />
-                <p className="m-0 text-base leading-7 text-[var(--muted)]">{benefit}</p>
+                <CheckCircle2 className="mt-1 shrink-0 text-indigo-400" size={18} aria-hidden="true" />
+                <p className="m-0 text-sm leading-6 text-slate-400">{benefit}</p>
               </div>
             ))}
           </div>
         </div>
       </motion.section>
 
-      <motion.section className="px-4 py-16 sm:px-6 lg:px-8" {...sectionMotion}>
+      {/* ── FAQ Accordion Section ── */}
+      <motion.section className="px-6 py-20 sm:px-8" {...sectionMotion}>
         <div className="mx-auto max-w-4xl">
-          <div className="text-center">
-            <p className="text-sm font-black uppercase tracking-widest text-[var(--primary)]">
+          <div className="text-center mb-12">
+            <p className="text-xs font-black uppercase tracking-widest text-indigo-400">
               FAQ
             </p>
-            <h2 className="mt-3 text-3xl font-black tracking-normal text-[var(--text)] sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-black tracking-normal text-white sm:text-4xl">
               Practical answers before you begin.
             </h2>
           </div>
-          <div className="mt-10 space-y-3">
+          <div className="space-y-3">
             {faqs.map((faq, index) => {
               const isOpen = openFaq === index;
               return (
                 <article
-                  className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface)]"
+                  className="overflow-hidden rounded-xl border border-white/5 bg-slate-900/30"
                   key={faq.question}
                 >
                   <button
                     aria-expanded={isOpen}
-                    className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left text-sm font-black text-[var(--text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+                    className="flex w-full items-center justify-between gap-4 px-6 py-4 text-left text-sm font-bold text-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 transition hover:bg-white/5"
                     onClick={() => setOpenFaq(isOpen ? null : index)}
                     type="button"
                   >
                     {faq.question}
-                    <FaChevronDown
-                      className={`shrink-0 text-[var(--primary)] transition ${isOpen ? "rotate-180" : ""}`}
+                    <ChevronDown
+                      className={`shrink-0 text-indigo-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                      size={18}
                       aria-hidden="true"
                     />
                   </button>
@@ -320,7 +487,7 @@ const Landing = () => {
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <p className="m-0 border-t border-[var(--border)] px-5 py-4 text-sm leading-7 text-[var(--muted)]">
+                        <p className="m-0 border-t border-white/5 px-6 py-4 text-xs leading-6 text-slate-400 bg-slate-900/10">
                           {faq.answer}
                         </p>
                       </motion.div>
@@ -333,32 +500,62 @@ const Landing = () => {
         </div>
       </motion.section>
 
+      {/* ── Footer CTA ── */}
       <motion.section
-        className="mx-auto w-full max-w-7xl px-4 pb-20 sm:px-6 lg:px-8"
+        className="mx-auto w-full max-w-7xl px-6 pb-24 sm:px-8"
         {...sectionMotion}
       >
-        <div className="rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)] p-6 text-[var(--bg)] sm:p-8 lg:flex lg:items-center lg:justify-between lg:gap-8">
-          <div>
-            <p className="text-sm font-black uppercase tracking-widest text-[var(--bg)]/70">
+        <div 
+          className="rounded-2xl p-8 sm:p-12 lg:flex lg:items-center lg:justify-between lg:gap-8"
+          style={{
+            background: "linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.05) 100%)",
+            border: "1px solid rgba(99, 102, 241, 0.3)"
+          }}
+        >
+          <div className="mb-6 lg:mb-0">
+            <p className="text-xs font-black uppercase tracking-widest text-indigo-400">
               Next step
             </p>
-            <h2 className="mt-2 text-3xl font-black tracking-normal sm:text-4xl">
+            <h2 className="mt-2 text-2xl font-black tracking-normal text-white sm:text-3xl">
               Prepare with a flow that requires complete answers.
             </h2>
-            <p className="mt-3 max-w-2xl text-base leading-7 text-[var(--bg)]/80">
+            <p className="mt-3 max-w-2xl text-xs leading-6 text-slate-400">
               Create an account, run a mock session, submit it, and review the
               saved result when you are ready to improve the next round.
             </p>
           </div>
           <Link
-            className="mt-6 btn btn-secondary lg:mt-0"
-            style={{ background: "var(--bg)", color: "var(--text)" }}
+            className="btn btn-secondary lg:mt-0"
+            style={{ 
+              background: "#fff", 
+              color: "#0B1120", 
+              fontWeight: 700, 
+              padding: "12px 24px",
+              borderRadius: "10px",
+              border: "none",
+              textDecoration: "none",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px"
+            }}
             to="/register"
           >
-            Signup <FaArrowRight aria-hidden="true" />
+            Signup <ArrowRight size={16} aria-hidden="true" />
           </Link>
         </div>
       </motion.section>
+
+      {/* ── Footer ── */}
+      <footer className="border-t border-white/5 bg-[#0A0F1D] py-12 text-slate-500 text-xs">
+        <div className="mx-auto max-w-7xl px-6 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <p>© 2026 AI Career Platform. All rights reserved.</p>
+          <div className="flex gap-6">
+            <a href="https://github.com" className="hover:text-slate-300 transition">GitHub</a>
+            <a href="https://linkedin.com" className="hover:text-slate-300 transition">LinkedIn</a>
+            <a href="mailto:support@aicareer.com" className="hover:text-slate-300 transition">Email</a>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 };
