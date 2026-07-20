@@ -1,7 +1,6 @@
-const fs = require("fs");
+﻿const fs = require("fs");
 const path = require("path");
-
-require("dotenv").config({ path: path.resolve(__dirname, ".env"), quiet: true });
+const { assertRuntimeConfig } = require("./config/env");
 
 const express = require("express");
 const cors = require("cors");
@@ -27,32 +26,6 @@ const app = express();
 if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", true);
 }
-const validateRuntimeConfig = () => {
-  const warnings = [];
-
-  if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
-    warnings.push("JWT_SECRET is missing or shorter than 32 characters.");
-  }
-
-  if (!process.env.GEMINI_API_KEY) {
-    warnings.push("GEMINI_API_KEY is missing. AI routes will use local fallbacks.");
-  }
-
-  if (process.env.NODE_ENV === "production") {
-    const frontendOrigin = process.env.CLIENT_URL || process.env.FRONTEND_URL || "";
-
-    if (!frontendOrigin || frontendOrigin.includes("localhost")) {
-      warnings.push("CLIENT_URL or FRONTEND_URL should be set to the deployed frontend origin in production.");
-    }
-
-    if (!process.env.SERVER_URL || process.env.SERVER_URL.includes("localhost")) {
-      warnings.push("SERVER_URL should be set to the deployed API origin in production.");
-    }
-  }
-
-  warnings.forEach((warning) => logger.warn(warning));
-};
-
 const allowedOrigins = (
   process.env.NODE_ENV === "production"
     ? (process.env.CLIENT_URL || process.env.FRONTEND_URL || "").split(",")
@@ -155,7 +128,7 @@ app.use(errorHandler);
 
 const startServer = async () => {
   try {
-    validateRuntimeConfig();
+    assertRuntimeConfig();
     await connectDB();
     app.listen(PORT, () => logger.info(`Server running on port ${PORT}`));
   } catch (error) {
@@ -169,3 +142,4 @@ if (require.main === module) {
 }
 
 module.exports = { app, startServer };
+
