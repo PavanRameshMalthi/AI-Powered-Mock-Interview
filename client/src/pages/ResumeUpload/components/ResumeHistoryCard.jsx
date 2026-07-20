@@ -41,10 +41,11 @@ const ResumeHistoryCard = ({
 
   const handleDownload = () => {
     if (!resume.fileUrl) return;
-    // Build absolute URL
+    // Build absolute URL without duplicating /api prefix
+    const base = apiBase.endsWith("/api") ? apiBase.slice(0, -4) : apiBase;
     const url = resume.fileUrl.startsWith("http")
       ? resume.fileUrl
-      : `${apiBase}${resume.fileUrl}`;
+      : `${base}${resume.fileUrl}`;
     const a = document.createElement("a");
     a.href = url;
     a.download = resume.fileName || `Resume_v${resume.version}.pdf`;
