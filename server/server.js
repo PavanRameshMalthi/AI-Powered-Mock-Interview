@@ -1,3 +1,4 @@
+const fs = require("fs");
 const path = require("path");
 
 require("dotenv").config({ path: path.resolve(__dirname, ".env"), quiet: true });
@@ -21,6 +22,7 @@ const { errorHandler, notFound } = require("./middleware/errorMiddleware");
 const logger = require("./utils/logger");
 
 const PORT = process.env.PORT || 5001;
+const clientDistPath = path.resolve(__dirname, "..", "dist");
 const app = express();
 if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", true);
@@ -133,9 +135,20 @@ app.use("/api/evaluation", evaluationRoutes);
 app.use("/api/history", historyRoutes);
 app.use("/api/admin", adminRoutes);
 
+app.get("/api/health", (req, res) =>
+  res.json({ success: true, message: "AI Career Platform API Running" })
+);
+
 app.get("/", (req, res) =>
   res.json({ success: true, message: "AI Career Platform API Running" })
 );
+
+if (process.env.NODE_ENV === "production" && fs.existsSync(clientDistPath)) {
+  app.use(express.static(clientDistPath, { index: false, maxAge: "1d" }));
+  app.get(/^\/(?!api(?:\/|$)).*/, (req, res) => {
+    res.sendFile(path.join(clientDistPath, "index.html"));
+  });
+}
 
 app.use(notFound);
 app.use(errorHandler);

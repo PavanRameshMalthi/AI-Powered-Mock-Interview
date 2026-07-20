@@ -2,6 +2,7 @@ const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const logger = require("../utils/logger");
 const { AppError, asyncHandler } = require("../middleware/errorMiddleware");
 
 const ACCESS_TOKEN_TTL = process.env.ACCESS_TOKEN_TTL || "15m";
@@ -46,7 +47,7 @@ const getClientUrl = (req) => {
     const protocol = req.headers["x-forwarded-proto"] || req.protocol || "http";
     return `${protocol}://${host}`;
   }
-  return process.env.CLIENT_URL || "http://localhost:5173";
+  return process.env.CLIENT_URL || "/";
 };
 
 const appendQuery = (url, params) => {
@@ -59,8 +60,7 @@ const appendQuery = (url, params) => {
 
 const deliverMessage = async ({ to, subject, text }) => {
   if (process.env.NODE_ENV !== "test") {
-    // Replace this with a transactional email/SMS provider in production.
-    console.info(JSON.stringify({ channel: "auth-delivery", to, subject, text }));
+    logger.info({ channel: "auth-delivery", to, subject, text }, "Auth delivery message generated");
   }
 
   return true;
