@@ -1,4 +1,4 @@
-﻿const path = require("path");
+const path = require("path");
 const dotenv = require("dotenv");
 
 const rootEnvPath = path.resolve(__dirname, "..", "..", ".env");
@@ -15,10 +15,23 @@ const applyDefault = (key, value) => {
   }
 };
 
+const mirrorMongoUri = () => {
+  if (!process.env.MONGO_URI && process.env.MONGODB_URI) {
+    process.env.MONGO_URI = process.env.MONGODB_URI;
+  }
+
+  if (!process.env.MONGODB_URI && process.env.MONGO_URI) {
+    process.env.MONGODB_URI = process.env.MONGO_URI;
+  }
+};
+
+mirrorMongoUri();
+
 if (!isProduction) {
   applyDefault("NODE_ENV", "development");
   applyDefault("PORT", "5001");
   applyDefault("MONGO_URI", "mongodb://127.0.0.1:27017/ai_mock_interview");
+  applyDefault("MONGODB_URI", process.env.MONGO_URI);
   applyDefault("JWT_SECRET", "local-development-jwt-secret-change-me-32chars");
   applyDefault("CLIENT_URL", "http://localhost:5173");
   applyDefault("FRONTEND_URL", process.env.CLIENT_URL);
@@ -28,12 +41,13 @@ if (!isProduction) {
 }
 
 applyDefault("GEMINI_MODEL", "gemini-2.0-flash");
+mirrorMongoUri();
 
 const getRuntimeIssues = () => {
   const issues = [];
 
   if (!process.env.MONGO_URI) {
-    issues.push("MONGO_URI is required. Set it in server/.env or the deployment environment.");
+    issues.push("MONGO_URI or MONGODB_URI is required. Set it in server/.env or the deployment environment.");
   }
 
   if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {

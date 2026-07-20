@@ -2,7 +2,7 @@ import api from "./api";
 
 const login = async (data) => {
   const response = await api.post(
-    "/api/auth/login",
+    "/auth/login",
     data
   );
 
@@ -11,7 +11,7 @@ const login = async (data) => {
 
 const register = async (data) => {
   const response = await api.post(
-    "/api/auth/register",
+    "/auth/register",
     data
   );
 
@@ -19,22 +19,22 @@ const register = async (data) => {
 };
 
 const refreshSession = async (data = {}) => {
-  const response = await api.post("/api/auth/refresh", data);
+  const response = await api.post("/auth/refresh", data);
   return response.data;
 };
 
 const logout = async () => {
-  const response = await api.post("/api/auth/logout");
+  const response = await api.post("/auth/logout");
   return response.data;
 };
 
 const forgotPassword = async (data) => {
-  const response = await api.post("/api/auth/forgot-password", data);
+  const response = await api.post("/auth/forgot-password", data);
   return response.data;
 };
 
 const resetPassword = async (data) => {
-  const response = await api.post("/api/auth/reset-password", data);
+  const response = await api.post("/auth/reset-password", data);
   return response.data;
 };
 
