@@ -37,8 +37,17 @@ const createAccessToken = (user) => {
 
 const createRefreshToken = () => crypto.randomBytes(48).toString("hex");
 
-const getClientUrl = () =>
-  (process.env.CLIENT_URL || process.env.FRONTEND_URL || "http://localhost:5173").split(",")[0];
+const getClientUrl = (req) => {
+  if (process.env.CLIENT_URL || process.env.FRONTEND_URL) {
+    return (process.env.CLIENT_URL || process.env.FRONTEND_URL).split(",")[0];
+  }
+  if (req) {
+    const host = req.headers.host;
+    const protocol = req.headers["x-forwarded-proto"] || req.protocol || "http";
+    return `${protocol}://${host}`;
+  }
+  return "http://localhost:5173";
+};
 
 const appendQuery = (url, params) => {
   const target = new URL(url);
@@ -204,7 +213,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
     user.passwordResetExpires = new Date(Date.now() + PASSWORD_RESET_TTL_MINUTES * 60 * 1000);
     await user.save();
 
-    const resetUrl = appendQuery(`${getClientUrl().replace(/\/$/, "")}/reset-password`, {
+    const resetUrl = appendQuery(`${getClientUrl(req).replace(/\/$/, "")}/reset-password`, {
       token: resetToken,
     });
     await deliverMessage({

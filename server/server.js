@@ -67,15 +67,25 @@ app.use(
   })
 );
 app.use(
-  cors({
-    origin: (origin, cb) => {
-      if (!origin || process.env.NODE_ENV !== "production" || allowedOrigins.includes(origin)) {
-        return cb(null, true);
-      }
+  cors((req, cb) => {
+    const origin = req.header("Origin");
+    const host = req.header("Host");
 
+    let isAllowed =
+      !origin || process.env.NODE_ENV !== "production" || allowedOrigins.includes(origin);
+
+    if (!isAllowed && origin && host) {
+      const originHost = origin.replace(/^https?:\/\//, "");
+      if (originHost === host) {
+        isAllowed = true;
+      }
+    }
+
+    if (isAllowed) {
+      cb(null, { origin: true, credentials: true });
+    } else {
       cb(new Error("Not allowed by CORS"));
-    },
-    credentials: true,
+    }
   })
 );
 app.use(express.json({ limit: "1mb" }));

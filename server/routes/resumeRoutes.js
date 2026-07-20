@@ -17,7 +17,7 @@ const {
 } = require("../controllers/resumeController");
 
 // ── Serve uploaded resume files statically ─────────────────────────────────────
-const uploadsDir = path.join(__dirname, "..", "uploads");
+const uploadsDir = require("../utils/uploadsDir");
 router.use("/files", express.static(uploadsDir, {
   dotfiles: "deny",
   // Allow only PDF and DOCX

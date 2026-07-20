@@ -111,6 +111,8 @@ Navigating the modern job market requires candidate preparation at multiple step
 
 ```
 ai-career-platform/
+├── api/                    # Vercel Serverless Function entry point
+│   └── index.js
 ├── client/                 # React Frontend (Vite)
 │   ├── src/
 │   │   ├── components/     # AppLayout, Sidebar, ProtectedRoute, Topbar
@@ -127,7 +129,8 @@ ai-career-platform/
 │   ├── models/             # Mongoose collections (User, Resume, BuilderResume)
 │   ├── routes/             # REST route files
 │   └── utils/              # Gemini interfaces, ATS calculations
-└── package.json
+├── package.json            # Root workspace package.json
+└── vercel.json             # Vercel deployment routing configuration
 ```
 
 ---
@@ -139,7 +142,23 @@ git clone https://github.com/PavanRameshMalthi/AI-Mock-Interview.git
 cd AI-Mock-Interview
 ```
 
-### Backend Setup:
+### Option A: Local Workspace (Recommended)
+This project uses npm workspaces to manage both frontend and backend dependencies in a single step:
+```bash
+# Install all dependencies (client and server) at the root level
+npm install
+
+# Start the backend in development (port 5000)
+npm run dev --workspace=server
+
+# Start the frontend in development (port 5173)
+npm run dev --workspace=client
+```
+
+### Option B: Individual Folders
+If you prefer running them separately:
+
+#### Backend Setup:
 ```bash
 cd server
 npm install
@@ -147,7 +166,7 @@ npm install
 npm run dev
 ```
 
-### Frontend Setup:
+#### Frontend Setup:
 ```bash
 cd ../client
 npm install
@@ -159,22 +178,52 @@ npm run dev
 
 ## Environment Variables
 
-Create files named `.env` in both client and server directories:
+Create files named `.env` in both client and server directories (or use the root `.env.example` as a template):
 
 ### Backend Configuration (`server/.env`)
 ```env
 PORT=5000
 MONGODB_URI=mongodb://localhost:27017/ai_career_platform
-JWT_SECRET=your_jwt_auth_secret_key
-REFRESH_TOKEN_SECRET=your_jwt_refresh_secret_key
+JWT_SECRET=your_jwt_auth_secret_key_minimum_32_chars
 GEMINI_API_KEY=AIzaSyYourGeminiKeyHere
-CLIENT_URL=http://localhost:5173
 ```
 
 ### Frontend Configuration (`client/.env`)
 ```env
 VITE_API_URL=http://localhost:5000/api
 ```
+
+---
+
+## Vercel Deployment
+
+This project is 100% optimized for zero-config-style deployment on **Vercel** as a single application containing both React frontend and Express serverless backend.
+
+### Project Settings on Vercel:
+1. **Root Directory**: `.` (leave as root)
+2. **Framework Preset**: `Vite` (Vercel will detect the `client` build because of workspace commands)
+3. **Build Command**: `npm run build`
+4. **Output Directory**: `client/dist`
+5. **Node.js Version**: `20.x` or `22.x`
+
+### Required Vercel Environment Variables:
+Add these under **Settings > Environment Variables** in your Vercel Dashboard:
+- `MONGO_URI`: MongoDB Atlas connection string
+- `JWT_SECRET`: Secret key (min. 32 characters)
+- `GEMINI_API_KEY`: Google Gemini API Key
+
+*Optional variables for social auth / advanced logs:*
+- `CLIENT_URL` / `SERVER_URL` (Not required. The system will automatically handle dynamic preview domain routing, CORS, and callback redirects on Vercel)
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`
+
+### Deployment Steps:
+1. Go to the Vercel Dashboard and click **Add New > Project**.
+2. Import this repository.
+3. Configure the **Build & Development Settings**:
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `client/dist`
+4. Add the **Environment Variables** listed above.
+5. Click **Deploy**.
 
 ---
 

@@ -371,7 +371,8 @@ const deleteResume = asyncHandler(async (req, res) => {
   // Also try to delete the physical file (best effort)
   if (resume.fileUrl) {
     const filename = path.basename(resume.fileUrl);
-    const filePath = path.join(__dirname, "..", "uploads", filename);
+    const uploadsDir = require("../utils/uploadsDir");
+    const filePath = path.join(uploadsDir, filename);
     await fs.unlink(filePath).catch(() => {});
   }
 
