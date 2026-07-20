@@ -148,7 +148,7 @@ This project uses npm workspaces to manage both frontend and backend dependencie
 # Install all dependencies (client and server) at the root level
 npm install
 
-# Start the backend in development (port 5000)
+# Start the backend in development (port 5001)
 npm run dev --workspace=server
 
 # Start the frontend in development (port 5173)
@@ -182,7 +182,7 @@ Create files named `.env` in both client and server directories (or use the root
 
 ### Backend Configuration (`server/.env`)
 ```env
-PORT=5000
+PORT=5001
 MONGODB_URI=mongodb://localhost:27017/ai_career_platform
 JWT_SECRET=your_jwt_auth_secret_key_minimum_32_chars
 GEMINI_API_KEY=AIzaSyYourGeminiKeyHere
@@ -190,7 +190,7 @@ GEMINI_API_KEY=AIzaSyYourGeminiKeyHere
 
 ### Frontend Configuration (`client/.env`)
 ```env
-VITE_API_URL=http://localhost:5000/api
+VITE_API_URL=http://localhost:5001/api
 ```
 
 ---

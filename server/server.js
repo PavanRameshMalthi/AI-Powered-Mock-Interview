@@ -20,7 +20,7 @@ const sanitizeRequest = require("./middleware/sanitizeMiddleware");
 const { errorHandler, notFound } = require("./middleware/errorMiddleware");
 const logger = require("./utils/logger");
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 const app = express();
 if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", true);
