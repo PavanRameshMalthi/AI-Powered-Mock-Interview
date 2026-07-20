@@ -244,18 +244,6 @@ const Landing = () => {
             >
               Login
             </Link>
-            <button
-              className="btn btn-ghost"
-              style={{
-                borderRadius: "10px",
-                padding: "12px 24px",
-                border: "1px solid rgba(255, 255, 255, 0.08)",
-                color: "var(--text)"
-              }}
-              onClick={() => {}}
-            >
-              Watch Demo
-            </button>
           </div>
         </motion.div>
 

@@ -55,8 +55,11 @@ const getRuntimeIssues = () => {
   }
 
   if (isProduction) {
-    const frontendOrigin = process.env.CLIENT_URL || process.env.FRONTEND_URL || "";
-    if (!frontendOrigin || frontendOrigin.includes("localhost") || frontendOrigin.includes("127.0.0.1")) {
+    const frontendOrigin =
+      process.env.CLIENT_URL || process.env.FRONTEND_URL || process.env.VERCEL_URL || "";
+    if (!frontendOrigin) {
+      issues.push("CLIENT_URL, FRONTEND_URL, or VERCEL_URL must be available in production.");
+    } else if (frontendOrigin.includes("localhost") || frontendOrigin.includes("127.0.0.1")) {
       issues.push("CLIENT_URL or FRONTEND_URL must be the deployed frontend origin in production.");
     }
   }

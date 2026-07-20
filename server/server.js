@@ -26,9 +26,19 @@ const app = express();
 if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", true);
 }
+const withHttps = (host) =>
+  host && /^https?:\/\//i.test(host) ? host : host ? `https://${host}` : "";
+
+const productionOrigins = [
+  ...(process.env.CLIENT_URL || "").split(","),
+  ...(process.env.FRONTEND_URL || "").split(","),
+  withHttps(process.env.VERCEL_URL),
+  withHttps(process.env.VERCEL_BRANCH_URL),
+];
+
 const allowedOrigins = (
   process.env.NODE_ENV === "production"
-    ? (process.env.CLIENT_URL || process.env.FRONTEND_URL || "").split(",")
+    ? productionOrigins
     : [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
@@ -36,7 +46,7 @@ const allowedOrigins = (
         "http://127.0.0.1:3000",
       ]
 )
-  .map((origin) => origin.trim())
+  .map((origin) => origin.trim().replace(/\/$/, ""))
   .filter(Boolean);
 
 app.use(
@@ -53,7 +63,7 @@ app.use(
       !origin || process.env.NODE_ENV !== "production" || allowedOrigins.includes(origin);
 
     if (!isAllowed && origin && host) {
-      const originHost = origin.replace(/^https?:\/\//, "");
+      const originHost = origin.replace(/^https?:\/\//, "").replace(/\/$/, "");
       if (originHost === host) {
         isAllowed = true;
       }

@@ -19,6 +19,7 @@ test("renders landing page without fake social proof or removed landing actions"
   expect(screen.getByRole("heading", { name: /practical answers before you begin/i })).toBeInTheDocument();
   expect(screen.queryByRole("link", { name: /start interview/i })).not.toBeInTheDocument();
   expect(screen.queryByRole("link", { name: /watch demo/i })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: /watch demo/i })).not.toBeInTheDocument();
   expect(screen.queryByText(/ratings/i)).not.toBeInTheDocument();
   expect(screen.queryByText(/interviews completed/i)).not.toBeInTheDocument();
 });
