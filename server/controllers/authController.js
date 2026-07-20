@@ -46,7 +46,7 @@ const getClientUrl = (req) => {
     const protocol = req.headers["x-forwarded-proto"] || req.protocol || "http";
     return `${protocol}://${host}`;
   }
-  return "http://localhost:5173";
+  return process.env.CLIENT_URL || "http://localhost:5173";
 };
 
 const appendQuery = (url, params) => {
