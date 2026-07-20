@@ -7,7 +7,7 @@
     "server"
   ],
   "scripts": {
-    "build": "npm run build --workspace=client",
+    "build": "npm run build --workspace=client && node scripts/postbuild.js",
     "test": "npm test --workspaces"
   }
 }
