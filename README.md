@@ -183,14 +183,15 @@ Create files named `.env` in both client and server directories (or use the root
 ### Backend Configuration (`server/.env`)
 ```env
 PORT=5001
-MONGODB_URI=mongodb://localhost:27017/ai_career_platform
+MONGO_URI=mongodb://localhost:27017/ai_mock_interview
 JWT_SECRET=your_jwt_auth_secret_key_minimum_32_chars
 GEMINI_API_KEY=AIzaSyYourGeminiKeyHere
 ```
 
 ### Frontend Configuration (`client/.env`)
 ```env
-VITE_API_URL=http://localhost:5001/api
+VITE_API_URL=/api
+VITE_API_PROXY_TARGET=http://localhost:5001
 ```
 
 ---
@@ -200,7 +201,7 @@ VITE_API_URL=http://localhost:5001/api
 This project is 100% optimized for zero-config-style deployment on **Vercel** as a single application containing both React frontend and Express serverless backend.
 
 ### Project Settings on Vercel:
-All build configuration settings (`buildCommand`, `outputDirectory`, and `framework`) are pre-configured in [vercel.json](file:///d:/PROJECTS/AI%20Mock%20Interview/vercel.json). When deploying:
+All build configuration settings (`buildCommand`, `outputDirectory`, and `framework`) are pre-configured in `vercel.json`. When deploying:
 1. Keep the **Root Directory** as `.` (the project root).
 2. The **Framework Preset**, **Build Command**, and **Output Directory** will be **automatically overridden** by Vercel using the configuration from `vercel.json` (running `npm run build` and serving `client/dist` respectively).
 3. Ensure the **Node.js Version** is set to `20.x` or `22.x`.

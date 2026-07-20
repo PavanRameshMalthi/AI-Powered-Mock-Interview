@@ -1,7 +1,6 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { User, Bell, Palette, CheckCircle2 } from "lucide-react";
+import { User, Palette, CheckCircle2 } from "lucide-react";
 
 const Settings = () => {
   const user = JSON.parse(

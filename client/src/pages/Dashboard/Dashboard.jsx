@@ -2,11 +2,9 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
-  Sparkles, 
   TrendingUp, 
   Award, 
   Calendar, 
-  Clock, 
   ArrowUpRight, 
   FileText, 
   CheckCircle2, 
@@ -18,8 +16,17 @@ import {
 } from "lucide-react";
 import ChartPanel from "../../components/UI/ChartPanel";
 import dashboardService from "../../services/dashboardService";
-import api from "../../services/api";
 
+const Sparkline = ({ stroke = "#6366F1", points = "0,15 10,8 20,12 30,5 40,9 50,2 60,10 70,3 80,12" }) => (
+  <svg width="80" height="20" style={{ opacity: 0.8, overflow: "visible" }}>
+    <polyline
+      fill="none"
+      stroke={stroke}
+      strokeWidth="1.5"
+      points={points}
+    />
+  </svg>
+);
 const Dashboard = () => {
   const navigate = useNavigate();
   const user = JSON.parse(
@@ -27,19 +34,16 @@ const Dashboard = () => {
   );
   const [summary, setSummary] = useState({ completed: 0, averageScore: 0, recent: [] });
   const [analytics, setAnalytics] = useState(null);
-  const [builderStats, setBuilderStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([
       dashboardService.getDashboardSummary(),
       dashboardService.getAnalytics().catch(() => null),
-      api.get("/resume-builder/stats").then((r) => r.data.stats).catch(() => null),
     ])
-      .then(([summaryData, analyticsData, statsData]) => {
+      .then(([summaryData, analyticsData]) => {
         setSummary(summaryData);
         setAnalytics(analyticsData);
-        setBuilderStats(statsData);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -54,23 +58,8 @@ const Dashboard = () => {
     show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } },
   };
 
-  const skillScores = analytics?.skillScores || [];
   const bestScore = analytics?.summary?.bestScore || 0;
   const streak = analytics?.summary?.interviewStreak || 0;
-  const totalResumes = builderStats?.totalResumes || 0;
-  const resumeScore = builderStats?.activeResume?.atsScore || 0;
-
-  // Simple SVG Sparkline for stats cards
-  const Sparkline = ({ stroke = "#6366F1", points = "0,15 10,8 20,12 30,5 40,9 50,2 60,10 70,3 80,12" }) => (
-    <svg width="80" height="20" style={{ opacity: 0.8, overflow: "visible" }}>
-      <polyline
-        fill="none"
-        stroke={stroke}
-        strokeWidth="1.5"
-        points={points}
-      />
-    </svg>
-  );
 
   return (
     <motion.main

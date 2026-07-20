@@ -39,7 +39,8 @@ const ResumeHistoryPanel = ({ onRestoreData, refreshTrigger }) => {
   }, []);
 
   useEffect(() => {
-    loadHistory(1);
+    const timeoutId = window.setTimeout(() => loadHistory(1), 0);
+    return () => window.clearTimeout(timeoutId);
   }, [loadHistory, refreshTrigger]);
 
   // ── Restore ───────────────────────────────────────────────────────────────────

@@ -91,6 +91,14 @@ const setRefreshCookie = (res, refreshToken, rememberMe = true) => {
   res.cookie("refreshToken", refreshToken, options);
 };
 
+const clearRefreshCookie = (res) => {
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  });
+};
+
 const issueSession = async (user, res, options = {}) => {
   const token = createAccessToken(user);
   const refreshToken = createRefreshToken();
@@ -184,7 +192,7 @@ const logout = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(req.user.id, { $unset: { refreshTokenHash: "" } });
   }
 
-  res.clearCookie("refreshToken");
+  clearRefreshCookie(res);
   res.json({ success: true, message: "Logged out successfully" });
 });
 
@@ -198,7 +206,7 @@ const changePassword = asyncHandler(async (req, res) => {
   user.password = await bcrypt.hash(req.body.password, 12);
   user.refreshTokenHash = undefined;
   await user.save();
-  res.clearCookie("refreshToken");
+  clearRefreshCookie(res);
 
   res.json({ success: true, message: "Password changed successfully" });
 });
@@ -257,7 +265,7 @@ const resetPassword = asyncHandler(async (req, res) => {
   user.refreshTokenHash = undefined;
   await user.save();
 
-  res.clearCookie("refreshToken");
+  clearRefreshCookie(res);
   res.json({ success: true, message: "Password reset successfully" });
 });
 

@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
-import { motion, useInView, useMotionValue, useSpring } from "framer-motion";
+import { useRef } from "react";
+import { motion, useInView } from "framer-motion";
 
 const getScoreColor = (score) => {
   if (score >= 90) return { stroke: "#22C55E", text: "#22C55E", label: "Excellent" };
@@ -14,16 +14,6 @@ const CircularScoreGauge = ({ score = 0, size = 180, strokeWidth = 14 }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
   const colors = getScoreColor(score);
-
-  const motionScore = useMotionValue(0);
-  const springScore = useSpring(motionScore, { stiffness: 60, damping: 15 });
-
-  useEffect(() => {
-    if (isInView) {
-      motionScore.set(score);
-    }
-  }, [isInView, score, motionScore]);
-
   const offset = circumference - (score / 100) * circumference;
 
   return (

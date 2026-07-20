@@ -1,4 +1,3 @@
-import React from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, 
@@ -24,7 +23,7 @@ const Sidebar = ({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) => {
   );
 
   const logout = async () => {
-    try { await authService.logout(); } catch (e) { /* Safe fallback */ }
+    try { await authService.logout(); } catch { /* Safe fallback */ }
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     sessionStorage.removeItem("token");

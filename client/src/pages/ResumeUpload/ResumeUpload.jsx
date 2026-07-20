@@ -1,7 +1,7 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { FileText, X, UploadCloud, CheckCircle2 } from "lucide-react";
+import { FileText, X, UploadCloud } from "lucide-react";
 import {
   dismissToast,
   showError,
@@ -33,6 +33,7 @@ const ResumeUpload = () => {
       return null;
     }
   });
+  const hasCachedAtsDataRef = useRef(Boolean(atsData));
 
   // Trigger history panel to refresh after upload
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
@@ -51,7 +52,7 @@ const ResumeUpload = () => {
     try {
       const response = await api.get("/resume-builder");
       setBuilderResumes(response.data.resumes || []);
-    } catch (error) {
+    } catch {
       showError("Failed to load saved builder resumes.");
     } finally {
       setLoadingBuilder(false);
@@ -96,7 +97,7 @@ const ResumeUpload = () => {
       dismissToast(toastId);
       showSuccess("Builder resume synced & analyzed successfully!");
       setHistoryRefreshKey((prev) => prev + 1); // reload history panel list
-    } catch (error) {
+    } catch {
       dismissToast(toastId);
       showError("Failed to synchronize builder resume.");
     } finally {
@@ -109,7 +110,7 @@ const ResumeUpload = () => {
   useEffect(() => {
     const fetchActiveResume = async () => {
       // If we don't have local cached data, show skeleton loading
-      if (!atsData) {
+      if (!hasCachedAtsDataRef.current) {
         setIsAnalyzing(true);
       }
       try {

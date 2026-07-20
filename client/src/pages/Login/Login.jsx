@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { showError, showSuccess } from "../../components/UI/Toast";
 import PasswordField from "../../components/UI/PasswordField";
 import authService from "../../services/authService";
-import { Mail, Shield, CheckCircle, Award } from "lucide-react";
+import { Mail, CheckCircle, Award } from "lucide-react";
 
 const Login = () => {
   const navigate = useNavigate();

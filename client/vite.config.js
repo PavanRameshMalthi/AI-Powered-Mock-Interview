@@ -8,7 +8,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: process.env.VITE_API_URL ? process.env.VITE_API_URL.replace(/\/api$/, "") : "http://localhost:5001",
+        target: process.env.VITE_API_PROXY_TARGET || "http://localhost:5001",
         changeOrigin: true,
       },
     },
@@ -18,9 +18,15 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes("node_modules")) {
+            if (id.includes("react") || id.includes("react-dom") || id.includes("react-router-dom")) return "vendor-react";
+            if (id.includes("framer-motion") || id.includes("motion-dom") || id.includes("motion-utils") || id.includes("style-value-types") || id.includes("popmotion") || id.includes("framesync") || id.includes("scheduler") || id.includes("goober")) return "vendor-motion";
+            if (id.includes("lucide-react")) return "vendor-icons";
+            if (id.includes("html2canvas")) return "vendor-html2canvas";
+            if (id.includes("canvg") || id.includes("dompurify") || id.includes("fflate") || id.includes("rgbcolor") || id.includes("raf")) return "vendor-pdf-support";
             if (id.includes("jspdf")) return "vendor-jspdf";
             if (id.includes("chart.js")) return "vendor-chartjs";
-            return "vendor";
+            if (id.includes("axios")) return "vendor-http";
+            return "vendor-core";
           }
         },
       },

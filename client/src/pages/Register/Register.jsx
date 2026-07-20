@@ -5,7 +5,7 @@ import { showError, showSuccess } from "../../components/UI/Toast";
 import PasswordField, { PasswordStrength } from "../../components/UI/PasswordField";
 import { getPasswordChecks } from "../../utils/passwordUtils";
 import authService from "../../services/authService";
-import { Mail, User, Shield, CheckCircle, Award } from "lucide-react";
+import { Mail, User, CheckCircle, Award } from "lucide-react";
 
 const Register = () => {
   const navigate = useNavigate();

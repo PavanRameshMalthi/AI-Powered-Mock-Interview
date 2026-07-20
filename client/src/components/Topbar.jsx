@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ChevronDown, User, Settings, LogOut, Menu } from "lucide-react";
 import authService from "../services/authService";
 
-const Topbar = ({ toggleSidebar, isCollapsed, setIsCollapsed }) => {
+const Topbar = ({ toggleSidebar }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
@@ -12,7 +12,7 @@ const Topbar = ({ toggleSidebar, isCollapsed, setIsCollapsed }) => {
   );
 
   const logout = async () => {
-    try { await authService.logout(); } catch (e) { /* Fallback */ }
+    try { await authService.logout(); } catch { /* Fallback */ }
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     sessionStorage.removeItem("token");

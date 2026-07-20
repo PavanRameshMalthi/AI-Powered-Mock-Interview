@@ -6,12 +6,8 @@ import {
   Trash2, 
   RotateCcw, 
   X, 
-  Award, 
-  Calendar, 
   Eye, 
   HelpCircle,
-  Filter,
-  Trash
 } from "lucide-react";
 import { showError, showSuccess } from "../../components/UI/Toast";
 import historyService from "../../services/historyService";

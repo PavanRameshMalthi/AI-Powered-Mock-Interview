@@ -16,7 +16,7 @@ services:
       PORT: 5001
       FRONTEND_URL: http://localhost:5173
       MONGO_URI: mongodb://mongo:27017/ai_mock_interview
-      JWT_SECRET: replace-with-a-long-random-secret
+      JWT_SECRET: replace-with-a-long-random-secret-of-at-least-32-chars
       GEMINI_API_KEY: replace-with-your-gemini-api-key
     ports:
       - "5001:5001"

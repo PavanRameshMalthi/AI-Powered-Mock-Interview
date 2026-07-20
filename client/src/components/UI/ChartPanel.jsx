@@ -8,8 +8,6 @@ const ChartPanel = ({ labels, values, type = "line", label = "Score" }) => {
   const valueKey = values.join("|");
 
   useEffect(() => {
-    let mounted = true;
-
     import("chart.js/auto")
       .then(({ default: Chart }) => {
         if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') {
@@ -55,7 +53,6 @@ const ChartPanel = ({ labels, values, type = "line", label = "Score" }) => {
       .catch(() => setAvailable(false));
 
     return () => {
-      mounted = false;
       chartRef.current?.destroy();
     };
   }, [label, labelKey, type, valueKey]);

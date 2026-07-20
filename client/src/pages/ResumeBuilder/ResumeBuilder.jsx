@@ -1,6 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { Fragment, useState, useEffect, useRef } from "react";
 import {
   FileText,
   Trash2,
@@ -155,25 +153,25 @@ const ResumeBuilder = () => {
     fetchStats();
   }, []);
 
-  const fetchResumes = async () => {
+  async function fetchResumes() {
     try {
       const res = await api.get("/resume-builder");
       setResumes(res.data.resumes || []);
-    } catch (err) {
-      console.error("Failed to fetch resumes", err);
+    } catch (error) {
+      console.error("Failed to fetch resumes", error);
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const fetchStats = async () => {
+  async function fetchStats() {
     try {
       const res = await api.get("/resume-builder/stats");
       setStats(res.data.stats || null);
-    } catch (err) {
-      console.error("Failed to fetch stats", err);
+    } catch (error) {
+      console.error("Failed to fetch stats", error);
     }
-  };
+  }
 
   // Debounced auto-save
   const triggerAutoSave = () => {
@@ -190,7 +188,7 @@ const ResumeBuilder = () => {
         });
         setSaveStatus("Saved");
         fetchStats(); // Update dashboard average stats
-      } catch (err) {
+      } catch {
         setSaveStatus("Save Failed");
       }
     }, 8000); // 800ms debounce
@@ -291,7 +289,7 @@ const ResumeBuilder = () => {
       setCurrentResume(res.data.resume);
       setIsEditing(true);
       setActiveTab("personal");
-    } catch (err) {
+    } catch {
       alert("Failed to create resume");
     }
   };
@@ -308,7 +306,7 @@ const ResumeBuilder = () => {
       await api.post(`/resume-builder/${id}/duplicate`);
       fetchResumes();
       fetchStats();
-    } catch (err) {
+    } catch {
       alert("Failed to duplicate resume");
     }
   };
@@ -320,7 +318,7 @@ const ResumeBuilder = () => {
       await api.delete(`/resume-builder/${id}`);
       fetchResumes();
       fetchStats();
-    } catch (err) {
+    } catch {
       alert("Failed to delete resume");
     }
   };
@@ -331,7 +329,7 @@ const ResumeBuilder = () => {
       await api.post(`/resume-builder/${id}/set-active`);
       fetchResumes();
       fetchStats();
-    } catch (err) {
+    } catch {
       alert("Failed to set active resume");
     }
   };
@@ -386,8 +384,8 @@ const ResumeBuilder = () => {
         template: currentResume.template,
         data: currentResume.data,
       });
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
     }
     setIsEditing(false);
     setCurrentResume(null);
@@ -411,10 +409,10 @@ const ResumeBuilder = () => {
     return (
       <div className="resume-contact">
         {links.map((item, idx) => (
-          <React.Fragment key={idx}>
+          <Fragment key={idx}>
             {idx > 0 && <span>|</span>}
             {item}
-          </React.Fragment>
+          </Fragment>
         ))}
       </div>
     );
@@ -533,7 +531,7 @@ const ResumeBuilder = () => {
 
   const renderSkillsSection = (mode = "plain") => {
     const skillsObj = currentResume.data.skills || {};
-    const categories = Object.entries(skillsObj).filter(([k, v]) => v && v.length);
+    const categories = Object.entries(skillsObj).filter(([, v]) => v && v.length);
     if (!categories.length) return null;
 
     return (

@@ -1,15 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { 
-  Award, 
-  BookOpen, 
-  CheckCircle2, 
-  Clock, 
-  MapPin, 
-  TrendingUp, 
-  User 
-} from "lucide-react";
+import { User } from "lucide-react";
 import dashboardService from "../../services/dashboardService";
 
 const Profile = () => {
@@ -204,12 +196,4 @@ const Profile = () => {
   );
 };
 
-// Simple motion wrapper component for fallback in case motion isn't imported correctly.
-const motionWrapper = (Component) => {
-  return Component;
-};
-
-// Check if motion is available (it is in our environment)
-const motionAvailable = typeof motion !== "undefined";
-const profileExport = motionAvailable ? Profile : Profile;
 export default Profile;

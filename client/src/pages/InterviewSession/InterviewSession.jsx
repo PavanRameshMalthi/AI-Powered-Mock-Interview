@@ -1,20 +1,20 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { 
   Volume2, 
   Mic, 
   Pause, 
-  Play, 
   ArrowLeft, 
   ArrowRight, 
   SkipForward,
   Bot, 
-  Sparkles, 
   Check, 
   CircleDot 
 } from "lucide-react";
 import { showError } from "../../components/UI/Toast";
+
+const VOICE_WAVE_PEAKS = [18, 28, 22, 32, 24, 35, 20, 30, 26];
 
 const InterviewSession = () => {
   const navigate = useNavigate();
@@ -299,7 +299,7 @@ const InterviewSession = () => {
               Array.from({ length: 9 }).map((_, i) => (
                 <motion.span
                   key={i}
-                  animate={{ height: [10, Math.floor(Math.random() * 25) + 12, 10] }}
+                  animate={{ height: [10, VOICE_WAVE_PEAKS[i], 10] }}
                   transition={{ repeat: Infinity, duration: 0.6 + i * 0.05, ease: "easeInOut" }}
                   style={{
                     width: "3px",
