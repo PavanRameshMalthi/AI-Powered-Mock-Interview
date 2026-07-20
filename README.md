@@ -200,11 +200,10 @@ VITE_API_URL=http://localhost:5000/api
 This project is 100% optimized for zero-config-style deployment on **Vercel** as a single application containing both React frontend and Express serverless backend.
 
 ### Project Settings on Vercel:
-1. **Root Directory**: `.` (leave as root)
-2. **Framework Preset**: `Vite` (Vercel will detect the `client` build because of workspace commands)
-3. **Build Command**: `npm run build`
-4. **Output Directory**: `client/dist`
-5. **Node.js Version**: `20.x` or `22.x`
+All build configuration settings (`buildCommand`, `outputDirectory`, and `framework`) are pre-configured in [vercel.json](file:///d:/PROJECTS/AI%20Mock%20Interview/vercel.json). When deploying:
+1. Keep the **Root Directory** as `.` (the project root).
+2. The **Framework Preset**, **Build Command**, and **Output Directory** will be **automatically overridden** by Vercel using the configuration from `vercel.json` (running `npm run build` and serving `client/dist` respectively).
+3. Ensure the **Node.js Version** is set to `20.x` or `22.x`.
 
 ### Required Vercel Environment Variables:
 Add these under **Settings > Environment Variables** in your Vercel Dashboard:
